@@ -37,6 +37,7 @@ if (!preg_match('/^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/', $phoneNormalized)) {
     echo json_encode(['ok' => false, 'error' => 'رقم الهاتف غير صالح.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
 $rootDir = dirname(__DIR__);
 $dataDir = $rootDir . DIRECTORY_SEPARATOR . 'data';
 $dataFile = $dataDir . DIRECTORY_SEPARATOR . 'cod-orders.csv';

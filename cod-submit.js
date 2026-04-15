@@ -14,7 +14,7 @@
       return explicitTarget + "?product=" + encodeURIComponent(productName || "");
     }
     var isProjector = (productName || "").indexOf("بروجيكتور") !== -1;
-    var target = isProjector ? "/thank-you-projectors" : "/thank-you-cameras";
+    var target = isProjector ? "thank-you-projectors.html" : "thank-you-cameras.html";
     return target + "?product=" + encodeURIComponent(productName || "");
   }
 
@@ -192,7 +192,6 @@
   document.querySelectorAll("form.cod-form").forEach(function (form) {
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
-
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");
@@ -220,18 +219,17 @@
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
 
-      Promise.allSettled([submitToLocalApi(payload), submitToGoogleSheet(payload, sheetKey)])
-        .then(function (results) {
-          var localOk = results[0] && results[0].status === "fulfilled";
-          var sheetOk = results[1] && results[1].status === "fulfilled";
-          if (localOk || sheetOk) {
-            window.location.href = getThankYouUrl(form, productName);
-            return;
-          }
-
-          var localErr = results[0] && results[0].reason;
-          var sheetErr = results[1] && results[1].reason;
-          var err = sheetErr || localErr || new Error("تعذر إرسال الطلب الآن.");
+      Promise.all([
+        submitToLocalApi(payload),
+        submitToGoogleSheet(payload, sheetKey).catch(function (err) {
+          console.warn("Google Sheets submit failed:", err);
+          return null;
+        }),
+      ])
+        .then(function () {
+          window.location.href = getThankYouUrl(form, productName);
+        })
+        .catch(function (err) {
           var fallbackUrl = makeFallbackWaUrl(form, payload);
           var message = err && err.message ? err.message : "تعذر إرسال الطلب الآن.";
           if (/Failed to fetch/i.test(message)) {
