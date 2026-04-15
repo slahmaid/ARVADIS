@@ -21,6 +21,7 @@ $product = trim((string)($input['product'] ?? ''));
 $name = trim((string)($input['name'] ?? ''));
 $phone = trim((string)($input['phone'] ?? ''));
 $city = trim((string)($input['city'] ?? ''));
+$quantity = (int)($input['quantity'] ?? 1);
 $upsell = trim((string)($input['upsell_sd_card'] ?? 'لا'));
 $pageUrl = trim((string)($input['page_url'] ?? ''));
 $submittedAt = trim((string)($input['submitted_at'] ?? ''));
@@ -36,6 +37,9 @@ if (!preg_match('/^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/', $phoneNormalized)) {
     http_response_code(422);
     echo json_encode(['ok' => false, 'error' => 'رقم الهاتف غير صالح.'], JSON_UNESCAPED_UNICODE);
     exit;
+}
+if ($quantity < 1) {
+    $quantity = 1;
 }
 
 $rootDir = dirname(__DIR__);
@@ -64,7 +68,7 @@ if (!flock($fp, LOCK_EX)) {
 }
 
 if ($isNewFile) {
-    fputcsv($fp, ['submitted_at', 'product', 'name', 'phone', 'city', 'upsell_sd_card', 'page_url']);
+    fputcsv($fp, ['submitted_at', 'product', 'name', 'phone', 'city', 'quantity', 'upsell_sd_card', 'page_url']);
 }
 
 fputcsv($fp, [
@@ -73,6 +77,7 @@ fputcsv($fp, [
     $name,
     $phone,
     $city,
+    $quantity,
     $upsell !== '' ? $upsell : 'لا',
     $pageUrl,
 ]);
