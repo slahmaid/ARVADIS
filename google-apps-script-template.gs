@@ -9,7 +9,6 @@ function doPost(e) {
       payload.name || "",
       payload.phone || "",
       payload.city || "",
-      payload.quantity || 1,
       payload.upsell_sd_card || "",
       payload.page_url || "",
       payload.page_path || "",

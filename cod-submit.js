@@ -66,14 +66,11 @@
 
   function formToPayload(form) {
     var data = new FormData(form);
-    var qtyRaw = parseInt(String(data.get("quantity") || "1"), 10);
-    var quantity = Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : 1;
     return {
       product: data.get("product") || "",
       name: data.get("name") || "",
       phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
-      quantity: quantity,
       upsell_sd_card: data.get("upsell_sd_card") || "لا",
       page_url: window.location.href,
       page_path: window.location.pathname,
@@ -100,8 +97,6 @@
       payload.phone +
       "\nالمدينة: " +
       payload.city +
-      "\nالكمية: " +
-      String(payload.quantity || 1) +
       "\nالمنتج: " +
       payload.product;
     var hasText = base.indexOf("text=") !== -1;
@@ -194,87 +189,9 @@
       });
   }
 
-  function ensureQuantitySelector(form) {
-    var existing = form.querySelector('input[name="quantity"]');
-    if (existing) return existing;
-
-    var fields = form.querySelector(".cod-form__fields");
-    if (!fields) return null;
-
-    var wrap = document.createElement("div");
-    wrap.className = "cod-form__label cod-form__label--quantity";
-
-    var labelText = document.createElement("span");
-    labelText.className = "cod-form__label-text";
-    labelText.textContent = "الكمية";
-    wrap.appendChild(labelText);
-
-    var selector = document.createElement("div");
-    selector.className = "qty-selector";
-
-    var minus = document.createElement("button");
-    minus.type = "button";
-    minus.className = "qty-selector__btn";
-    minus.setAttribute("data-qty-minus", "");
-    minus.setAttribute("aria-label", "تقليل الكمية");
-    minus.textContent = "-";
-
-    var input = document.createElement("input");
-    input.className = "qty-selector__input";
-    input.name = "quantity";
-    input.type = "number";
-    input.min = "1";
-    input.step = "1";
-    input.value = "1";
-    input.inputMode = "numeric";
-    input.setAttribute("aria-label", "الكمية");
-
-    var plus = document.createElement("button");
-    plus.type = "button";
-    plus.className = "qty-selector__btn";
-    plus.setAttribute("data-qty-plus", "");
-    plus.setAttribute("aria-label", "زيادة الكمية");
-    plus.textContent = "+";
-
-    selector.appendChild(minus);
-    selector.appendChild(input);
-    selector.appendChild(plus);
-    wrap.appendChild(selector);
-    fields.appendChild(wrap);
-
-    return input;
-  }
-
   document.querySelectorAll("form.cod-form").forEach(function (form) {
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
-    var qtyInput = ensureQuantitySelector(form);
-
-    function clampQty() {
-      if (!qtyInput) return;
-      var n = parseInt(String(qtyInput.value || "1"), 10);
-      if (!Number.isFinite(n) || n < 1) n = 1;
-      qtyInput.value = String(n);
-    }
-
-    if (qtyInput) {
-      qtyInput.addEventListener("change", clampQty);
-      qtyInput.addEventListener("blur", clampQty);
-      var minusBtn = form.querySelector("[data-qty-minus]");
-      var plusBtn = form.querySelector("[data-qty-plus]");
-      if (minusBtn) {
-        minusBtn.addEventListener("click", function () {
-          var n = parseInt(String(qtyInput.value || "1"), 10);
-          qtyInput.value = String(Math.max(1, (Number.isFinite(n) ? n : 1) - 1));
-        });
-      }
-      if (plusBtn) {
-        plusBtn.addEventListener("click", function () {
-          var n = parseInt(String(qtyInput.value || "1"), 10);
-          qtyInput.value = String((Number.isFinite(n) ? n : 1) + 1);
-        });
-      }
-    }
 
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
@@ -298,24 +215,23 @@
         return;
       }
 
-      clampQty();
-
       var payload = formToPayload(form);
       var productName = payload.product;
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
 
-      Promise.all([
-        submitToLocalApi(payload),
-        submitToGoogleSheet(payload, sheetKey).catch(function (err) {
-          console.warn("Google Sheets submit failed:", err);
-          return null;
-        }),
-      ])
-        .then(function () {
-          window.location.href = getThankYouUrl(form, productName);
-        })
-        .catch(function (err) {
+      Promise.allSettled([submitToLocalApi(payload), submitToGoogleSheet(payload, sheetKey)])
+        .then(function (results) {
+          var localOk = results[0] && results[0].status === "fulfilled";
+          var sheetOk = results[1] && results[1].status === "fulfilled";
+          if (localOk || sheetOk) {
+            window.location.href = getThankYouUrl(form, productName);
+            return;
+          }
+
+          var localErr = results[0] && results[0].reason;
+          var sheetErr = results[1] && results[1].reason;
+          var err = sheetErr || localErr || new Error("تعذر إرسال الطلب الآن.");
           var fallbackUrl = makeFallbackWaUrl(form, payload);
           var message = err && err.message ? err.message : "تعذر إرسال الطلب الآن.";
           if (/Failed to fetch/i.test(message)) {
