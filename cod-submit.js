@@ -20,7 +20,7 @@
 
   function detectSheetKey(form, payload) {
     var explicit = form.getAttribute("data-sheet-key");
-    if (explicit) return explicit;
+    if (explicit) return explicit.trim().toLowerCase();
     var product = (payload.product || "").toLowerCase();
     if (product.indexOf("بروجيكتور") !== -1 || product.indexOf("projector") !== -1) {
       return "projectors";
@@ -128,6 +128,11 @@
       });
   }
 
+  /** Best-effort CSV backup when PHP is available; never blocks static hosts (GitHub Pages). */
+  function submitToLocalApiSilently(payload) {
+    submitToLocalApi(payload).catch(function () {});
+  }
+
   function submitToGoogleSheet(payload, sheetKey) {
     var url = GOOGLE_SHEETS_ENDPOINTS[sheetKey] || "";
     if (!url) {
@@ -135,7 +140,11 @@
     }
     var isAppsScript = /script\.google\.com/i.test(url);
     if (isAppsScript) {
-      var body = JSON.stringify(payload);
+      try {
+        var body = JSON.stringify(payload);
+      } catch (e) {
+        return Promise.reject(e);
+      }
       // Fire-and-forget for Apps Script to avoid false timeout/CORS negatives.
       if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
         var blob = new Blob([body], { type: "text/plain;charset=utf-8" });
@@ -218,46 +227,39 @@
       var productName = payload.product;
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
-      var localSavePromise = submitToLocalApi(payload)
-        .then(function () {
-          return true;
-        })
-        .catch(function (err) {
-          console.warn("Local API submit failed:", err);
-          return false;
-        });
+      // Local PHP backup only (e.g. Apache). On static hosts this fails harmlessly — never block UX.
+      submitToLocalApiSilently(payload);
 
       submitToGoogleSheet(payload, sheetKey)
         .then(function () {
-          // Sheet success is enough to complete order UX.
-          window.location.href = getThankYouUrl(form, productName);
+          var target = getThankYouUrl(form, productName);
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(function () {
+              window.location.assign(target);
+            });
+          } else {
+            window.setTimeout(function () {
+              window.location.assign(target);
+            }, 0);
+          }
         })
         .catch(function (sheetErr) {
-          localSavePromise.then(function (localOk) {
-            if (localOk) {
-              // Local save succeeded; do not block customer on sheet issue.
-              window.location.href = getThankYouUrl(form, productName);
-              return;
-            }
-            var fallbackUrl = makeFallbackWaUrl(form, payload);
-            var message = sheetErr && sheetErr.message ? sheetErr.message : "تعذر إرسال الطلب الآن.";
-            if (/Failed to fetch/i.test(message)) {
-              message =
-                "تعذر الاتصال برابط Google Sheet. تأكد من نشر Apps Script كـ Web App مع صلاحية Anyone.";
-            }
-            if (fallbackUrl) {
-              errorNode.innerHTML =
-                message +
-                ' يمكنك إتمام الطلب عبر <a href="' +
-                fallbackUrl +
-                '" target="_blank" rel="noopener noreferrer">واتساب</a>.';
-            } else {
-              errorNode.textContent = message;
-            }
-            errorNode.style.display = "block";
-          });
-        })
-        .finally(function () {
+          var fallbackUrl = makeFallbackWaUrl(form, payload);
+          var message = sheetErr && sheetErr.message ? sheetErr.message : "تعذر إرسال الطلب الآن.";
+          if (/Failed to fetch/i.test(message)) {
+            message =
+              "تعذر الاتصال برابط Google Sheet. تأكد من نشر Apps Script كـ Web App مع صلاحية Anyone.";
+          }
+          if (fallbackUrl) {
+            errorNode.innerHTML =
+              message +
+              ' يمكنك إتمام الطلب عبر <a href="' +
+              fallbackUrl +
+              '" target="_blank" rel="noopener noreferrer">واتساب</a>.';
+          } else {
+            errorNode.textContent = message;
+          }
+          errorNode.style.display = "block";
           setPending(form, false);
         });
     });
