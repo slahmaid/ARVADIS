@@ -199,7 +199,7 @@
       @media (max-width: 768px) {
         .site-header {
           flex-direction: column;
-          align-items: center;
+          align-items: stretch;
           justify-content: center;
           gap: 0.75rem;
           padding-left: max(
@@ -221,11 +221,19 @@
         .nav {
           width: 100%;
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
           white-space: normal;
           gap: 0.35rem 0.45rem;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 0.15rem;
+        }
+
+        .nav::-webkit-scrollbar {
+          height: 0;
         }
 
         .nav-link,
@@ -729,7 +737,7 @@
       .product-card__badge {
         position: absolute;
         top: clamp(0.5rem, 2vw, 0.75rem);
-        left: clamp(0.5rem, 2vw, 0.75rem);
+        inset-inline-start: clamp(0.5rem, 2vw, 0.75rem);
         z-index: 4;
         padding: 0.28rem 0.55rem;
         font-family: "Cairo", sans-serif;

@@ -1,6 +1,6 @@
 (function () {
   var ENDPOINT = "api/submit-cod.php";
-  var PHONE_RE = /^(?:\+212|0)[0-9]{9}$/;
+  var PHONE_RE = /^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/;
   // Paste your deployed Google Apps Script Web App URLs here.
   var GOOGLE_SHEETS_ENDPOINTS = {
     moka: "https://script.google.com/macros/s/AKfycbxgqWCWoeLxuvY8c0fEgjxYTfASAj4etmz-cUUTul_FU3ImN0jcVCIhhzp-XjhdAVcD/exec",
@@ -69,7 +69,7 @@
     return {
       product: data.get("product") || "",
       name: data.get("name") || "",
-      phone: data.get("phone") || "",
+      phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
       upsell_sd_card: data.get("upsell_sd_card") || "لا",
       page_url: window.location.href,
@@ -79,7 +79,7 @@
   }
 
   function normalizePhone(phone) {
-    return (phone || "").replace(/\s+/g, "");
+    return (phone || "").replace(/[.\-\s()]/g, "");
   }
 
   function isValidPhone(phone) {
@@ -103,6 +103,29 @@
     return hasText
       ? base + "%0A%0A" + encodeURIComponent(details)
       : base + (base.indexOf("?") === -1 ? "?text=" : "&text=") + encodeURIComponent(details);
+  }
+
+  function submitToLocalApi(payload) {
+    return fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then(function (res) {
+        return res
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (data) {
+            if (!res.ok || data.ok !== true) {
+              throw new Error((data && data.error) || "تعذر حفظ الطلب في النظام المحلي.");
+            }
+            return data;
+          });
+      });
   }
 
   function submitToGoogleSheet(payload, sheetKey) {
@@ -170,8 +193,8 @@
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
     if (phoneInput) {
-      phoneInput.setAttribute("pattern", "(?:\\+212|0)[0-9]{9}");
-      phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو +212XXXXXXXXX");
+      phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
+      phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");
       phoneInput.addEventListener("input", function () {
         phoneInput.setCustomValidity("");
       });
@@ -196,7 +219,13 @@
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
 
-      submitToGoogleSheet(payload, sheetKey)
+      Promise.all([
+        submitToLocalApi(payload),
+        submitToGoogleSheet(payload, sheetKey).catch(function (err) {
+          console.warn("Google Sheets submit failed:", err);
+          return null;
+        }),
+      ])
         .then(function () {
           window.location.href = getThankYouUrl(form, productName);
         })

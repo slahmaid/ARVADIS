@@ -10,6 +10,9 @@
     var galleryThumbs = landingHero
       ? landingHero.querySelectorAll(".lp-thumb[data-lp-src]")
       : [];
+    var cardMediaImage = root.closest(".product-card")
+      ? root.closest(".product-card").querySelector(".product-card__media img")
+      : null;
     if (!options.length || !cur || !cmp) return;
 
     function activate(option) {
@@ -39,6 +42,12 @@
           thumb.classList.toggle("is-active", on);
           thumb.setAttribute("aria-pressed", on ? "true" : "false");
         });
+      }
+      if (cardMediaImage) {
+        var cardImageSrc = option.getAttribute("data-image-src");
+        var cardImageAlt = option.getAttribute("data-image-alt");
+        if (cardImageSrc) cardMediaImage.src = cardImageSrc;
+        if (cardImageAlt) cardMediaImage.alt = cardImageAlt;
       }
     }
 

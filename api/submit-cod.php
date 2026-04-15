@@ -31,8 +31,8 @@ if ($product === '' || $name === '' || $phone === '' || $city === '') {
     exit;
 }
 
-$phoneNormalized = preg_replace('/\s+/', '', $phone);
-if (!preg_match('/^(\+212|0)[0-9]{9}$/', $phoneNormalized)) {
+$phoneNormalized = preg_replace('/[.\-\s()]+/', '', $phone);
+if (!preg_match('/^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/', $phoneNormalized)) {
     http_response_code(422);
     echo json_encode(['ok' => false, 'error' => 'رقم الهاتف غير صالح.'], JSON_UNESCAPED_UNICODE);
     exit;
@@ -56,6 +56,13 @@ if ($fp === false) {
     exit;
 }
 
+if (!flock($fp, LOCK_EX)) {
+    fclose($fp);
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'Failed to lock data file'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($isNewFile) {
     fputcsv($fp, ['submitted_at', 'product', 'name', 'phone', 'city', 'upsell_sd_card', 'page_url']);
 }
@@ -69,6 +76,8 @@ fputcsv($fp, [
     $upsell !== '' ? $upsell : 'لا',
     $pageUrl,
 ]);
+fflush($fp);
+flock($fp, LOCK_UN);
 fclose($fp);
 
 echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
