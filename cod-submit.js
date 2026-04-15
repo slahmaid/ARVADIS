@@ -218,34 +218,44 @@
       var productName = payload.product;
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
-
-      Promise.all([
-        submitToLocalApi(payload),
-        submitToGoogleSheet(payload, sheetKey).catch(function (err) {
-          console.warn("Google Sheets submit failed:", err);
-          return null;
-        }),
-      ])
+      var localSavePromise = submitToLocalApi(payload)
         .then(function () {
-          window.location.href = getThankYouUrl(form, productName);
+          return true;
         })
         .catch(function (err) {
-          var fallbackUrl = makeFallbackWaUrl(form, payload);
-          var message = err && err.message ? err.message : "تعذر إرسال الطلب الآن.";
-          if (/Failed to fetch/i.test(message)) {
-            message =
-              "تعذر الاتصال برابط Google Sheet. تأكد من نشر Apps Script كـ Web App مع صلاحية Anyone.";
-          }
-          if (fallbackUrl) {
-            errorNode.innerHTML =
-              message +
-              ' يمكنك إتمام الطلب عبر <a href="' +
-              fallbackUrl +
-              '" target="_blank" rel="noopener noreferrer">واتساب</a>.';
-          } else {
-            errorNode.textContent = message;
-          }
-          errorNode.style.display = "block";
+          console.warn("Local API submit failed:", err);
+          return false;
+        });
+
+      submitToGoogleSheet(payload, sheetKey)
+        .then(function () {
+          // Sheet success is enough to complete order UX.
+          window.location.href = getThankYouUrl(form, productName);
+        })
+        .catch(function (sheetErr) {
+          localSavePromise.then(function (localOk) {
+            if (localOk) {
+              // Local save succeeded; do not block customer on sheet issue.
+              window.location.href = getThankYouUrl(form, productName);
+              return;
+            }
+            var fallbackUrl = makeFallbackWaUrl(form, payload);
+            var message = sheetErr && sheetErr.message ? sheetErr.message : "تعذر إرسال الطلب الآن.";
+            if (/Failed to fetch/i.test(message)) {
+              message =
+                "تعذر الاتصال برابط Google Sheet. تأكد من نشر Apps Script كـ Web App مع صلاحية Anyone.";
+            }
+            if (fallbackUrl) {
+              errorNode.innerHTML =
+                message +
+                ' يمكنك إتمام الطلب عبر <a href="' +
+                fallbackUrl +
+                '" target="_blank" rel="noopener noreferrer">واتساب</a>.';
+            } else {
+              errorNode.textContent = message;
+            }
+            errorNode.style.display = "block";
+          });
         })
         .finally(function () {
           setPending(form, false);
