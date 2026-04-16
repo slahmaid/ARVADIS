@@ -138,10 +138,18 @@
     if (!url) {
       return Promise.reject(new Error("لم يتم إعداد رابط Google Sheet لهذا النموذج بعد."));
     }
+    // Only send core form fields to the Google Sheet, exclude tracking fields
+    var sheetPayload = {
+      product: payload.product,
+      name: payload.name,
+      phone: payload.phone,
+      city: payload.city,
+      upsell_sd_card: payload.upsell_sd_card,
+    };
     var isAppsScript = /script\.google\.com/i.test(url);
     if (isAppsScript) {
       try {
-        var body = JSON.stringify(payload);
+        var body = JSON.stringify(sheetPayload);
       } catch (e) {
         return Promise.reject(e);
       }
@@ -179,7 +187,7 @@
       headers: {
         "Content-Type": "text/plain;charset=utf-8",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(sheetPayload),
       signal: controller ? controller.signal : undefined,
     })
       .then(function (res) {
