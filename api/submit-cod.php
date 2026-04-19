@@ -22,6 +22,10 @@ $name = trim((string)($input['name'] ?? ''));
 $phone = trim((string)($input['phone'] ?? ''));
 $city = trim((string)($input['city'] ?? ''));
 $upsell = trim((string)($input['upsell_sd_card'] ?? 'لا'));
+$quantity = $input['quantity'] ?? 1;
+$unitPrice = $input['unit_price_mad'] ?? '';
+$comparePrice = $input['compare_price_mad'] ?? '';
+$lineTotal = $input['line_total_mad'] ?? '';
 $pageUrl = trim((string)($input['page_url'] ?? ''));
 $submittedAt = trim((string)($input['submitted_at'] ?? ''));
 
@@ -64,7 +68,19 @@ if (!flock($fp, LOCK_EX)) {
 }
 
 if ($isNewFile) {
-    fputcsv($fp, ['submitted_at', 'product', 'name', 'phone', 'city', 'upsell_sd_card', 'page_url']);
+    fputcsv($fp, [
+        'submitted_at',
+        'product',
+        'name',
+        'phone',
+        'city',
+        'quantity',
+        'unit_price_mad',
+        'compare_price_mad',
+        'line_total_mad',
+        'upsell_sd_card',
+        'page_url',
+    ]);
 }
 
 fputcsv($fp, [
@@ -73,6 +89,10 @@ fputcsv($fp, [
     $name,
     $phone,
     $city,
+    is_numeric($quantity) ? (string)(int) $quantity : '1',
+    $unitPrice !== '' && $unitPrice !== null ? (string) $unitPrice : '',
+    $comparePrice !== '' && $comparePrice !== null ? (string) $comparePrice : '',
+    $lineTotal !== '' && $lineTotal !== null ? (string) $lineTotal : '',
     $upsell !== '' ? $upsell : 'لا',
     $pageUrl,
 ]);
