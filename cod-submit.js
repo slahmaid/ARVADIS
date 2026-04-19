@@ -8,72 +8,6 @@
     projectors: "https://script.google.com/macros/s/AKfycbyFeWL5WCj_jzdED9eAm2ulM4-iYrjRlDvlu8hriyfS_GAJFO5yBiGfOzGHzohRFjM/exec",
   };
 
-  /**
-   * Fixed line totals (MAD) for bundle / promo pricing by route key (moka | saqr | projectors)
-   * and quantity. When a quantity matches, the sheet receives line_total_mad = that total and
-   * unit_price_mad = total ÷ quantity (effective unit).
-   *
-   * Per-form overrides: add on <form class="cod-form"> e.g.
-   *   data-cod-line-totals='{"2":1400,"3":2000}'
-   * (same keys as quantity; merges on top of this table, form wins on duplicate keys.)
-   */
-  var SPECIAL_ORDER_LINE_TOTALS = {
-    moka: {
-      2: 1400,
-    },
-  };
-
-  function mergeLineTotalRules(sheetKey, form) {
-    var merged = {};
-    var def = SPECIAL_ORDER_LINE_TOTALS[sheetKey];
-    if (def && typeof def === "object") {
-      Object.keys(def).forEach(function (k) {
-        var q = parseInt(k, 10);
-        var v = Number(def[k]);
-        if (Number.isFinite(q) && q > 0 && Number.isFinite(v) && v > 0) {
-          merged[String(q)] = v;
-        }
-      });
-    }
-    var attr = form.getAttribute("data-cod-line-totals");
-    if (attr && String(attr).trim()) {
-      try {
-        var parsed = JSON.parse(attr);
-        if (parsed && typeof parsed === "object") {
-          Object.keys(parsed).forEach(function (k) {
-            var q = parseInt(k, 10);
-            var v = Number(parsed[k]);
-            if (Number.isFinite(q) && q > 0 && Number.isFinite(v) && v > 0) {
-              merged[String(q)] = v;
-            }
-          });
-        }
-      } catch (e) {}
-    }
-    return merged;
-  }
-
-  function applyOrderPricingOverrides(quantity, domUnit, comparePrice, lineRules) {
-    var special = lineRules[String(quantity)];
-    if (special != null && Number.isFinite(special) && special > 0) {
-      var line = roundMoney(special);
-      return {
-        unit_price_mad: roundMoney(line / quantity),
-        line_total_mad: line,
-        compare_price_mad: comparePrice,
-      };
-    }
-    var lineTotal =
-      domUnit != null && Number.isFinite(domUnit)
-        ? roundMoney(domUnit * quantity)
-        : null;
-    return {
-      unit_price_mad: domUnit,
-      line_total_mad: lineTotal,
-      compare_price_mad: comparePrice,
-    };
-  }
-
   function getThankYouUrl(form, productName) {
     var explicitTarget = form.getAttribute("data-thank-you");
     if (explicitTarget) {
@@ -136,22 +70,21 @@
     var productName = (data.get("product") || "").toString();
     var sheetKey = detectSheetKey(form, { product: productName });
     var pricing = getPricingForForm(form, sheetKey);
-    var lineRules = mergeLineTotalRules(sheetKey, form);
-    var priced = applyOrderPricingOverrides(
-      quantity,
-      pricing.unit,
-      pricing.compare,
-      lineRules
-    );
+    var unitPrice = pricing.unit;
+    var comparePrice = pricing.compare;
+    var lineTotal =
+      unitPrice != null && Number.isFinite(unitPrice)
+        ? roundMoney(unitPrice * quantity)
+        : null;
     return {
       product: productName,
       name: data.get("name") || "",
       phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
       quantity: quantity,
-      unit_price_mad: priced.unit_price_mad,
-      compare_price_mad: priced.compare_price_mad,
-      line_total_mad: priced.line_total_mad,
+      unit_price_mad: unitPrice,
+      compare_price_mad: comparePrice,
+      line_total_mad: lineTotal,
       upsell_sd_card: data.get("upsell_sd_card") || "لا",
       page_url: window.location.href,
       page_path: window.location.pathname,
