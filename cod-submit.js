@@ -66,16 +66,83 @@
 
   function formToPayload(form) {
     var data = new FormData(form);
+    var quantity = sanitizeQuantity(data.get("quantity"));
+    var productName = (data.get("product") || "").toString();
+    var sheetKey = detectSheetKey(form, { product: productName });
+    var pricing = getPricingForForm(form, sheetKey);
+    var unitPrice = pricing.unit;
+    var comparePrice = pricing.compare;
+    var lineTotal =
+      unitPrice != null && Number.isFinite(unitPrice)
+        ? roundMoney(unitPrice * quantity)
+        : null;
     return {
-      product: data.get("product") || "",
+      product: productName,
       name: data.get("name") || "",
       phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
+      quantity: quantity,
+      unit_price_mad: unitPrice,
+      compare_price_mad: comparePrice,
+      line_total_mad: lineTotal,
       upsell_sd_card: data.get("upsell_sd_card") || "لا",
       page_url: window.location.href,
       page_path: window.location.pathname,
       submitted_at: new Date().toISOString(),
     };
+  }
+
+  function roundMoney(value) {
+    return Math.round(value * 100) / 100;
+  }
+
+  function parseDisplayedMad(text) {
+    if (text == null) return null;
+    var m = String(text)
+      .replace(/[\u00a0\u202f]/g, " ")
+      .match(/[0-9]+(?:\.[0-9]+)?/);
+    if (!m) return null;
+    var n = parseFloat(m[0]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function getPricingForForm(form, sheetKey) {
+    var unit = null;
+    var compare = null;
+    if (sheetKey === "projectors") {
+      var prRoot = form.closest("[data-projector-root]");
+      if (prRoot) {
+        var curN = prRoot.querySelector("[data-projector-current]");
+        var cmpN = prRoot.querySelector("[data-projector-compare]");
+        unit = parseDisplayedMad(curN ? curN.textContent : "");
+        compare = parseDisplayedMad(cmpN ? cmpN.textContent : "");
+      }
+    } else if (sheetKey === "saqr") {
+      var saqrRoot = form.closest("#saqr") || form.closest(".landing-hero__content");
+      if (saqrRoot) {
+        var curS =
+          saqrRoot.querySelector("[data-saqr-card-current-price]") ||
+          saqrRoot.querySelector("[data-saqr-current-price]");
+        var cmpS = saqrRoot.querySelector(".product-card__price-compare");
+        unit = parseDisplayedMad(curS ? curS.textContent : "");
+        compare = parseDisplayedMad(cmpS ? cmpS.textContent : "");
+      }
+    } else {
+      var mokaRoot = form.closest(".product-card") || form.closest(".landing-hero__content");
+      if (mokaRoot) {
+        var curM = mokaRoot.querySelector(".product-card__price-current");
+        var cmpM = mokaRoot.querySelector(".product-card__price-compare");
+        unit = parseDisplayedMad(curM ? curM.textContent : "");
+        compare = parseDisplayedMad(cmpM ? cmpM.textContent : "");
+      }
+    }
+    return { unit: unit, compare: compare };
+  }
+
+  function sanitizeQuantity(value) {
+    var parsed = parseInt(value, 10);
+    if (!Number.isFinite(parsed)) return 1;
+    return Math.max(1, Math.min(20, parsed));
   }
 
   function normalizePhone(phone) {
@@ -97,6 +164,14 @@
       payload.phone +
       "\nالمدينة: " +
       payload.city +
+      "\nالكمية: " +
+      payload.quantity +
+      "\nسعر الوحدة (درهم): " +
+      (payload.unit_price_mad != null ? payload.unit_price_mad : "") +
+      "\nقبل التخفيض (درهم): " +
+      (payload.compare_price_mad != null ? payload.compare_price_mad : "") +
+      "\nالمجموع (درهم): " +
+      (payload.line_total_mad != null ? payload.line_total_mad : "") +
       "\nالمنتج: " +
       payload.product;
     var hasText = base.indexOf("text=") !== -1;
@@ -144,6 +219,10 @@
       name: payload.name,
       phone: payload.phone,
       city: payload.city,
+      quantity: payload.quantity,
+      unit_price_mad: payload.unit_price_mad,
+      compare_price_mad: payload.compare_price_mad,
+      line_total_mad: payload.line_total_mad,
       upsell_sd_card: payload.upsell_sd_card,
     };
     var isAppsScript = /script\.google\.com/i.test(url);
@@ -206,9 +285,39 @@
       });
   }
 
+  function initQuantitySelector(form) {
+    var qtyWrap = form.querySelector("[data-qty-selector]");
+    var qtyInput = form.querySelector('input[name="quantity"]');
+    if (!qtyWrap || !qtyInput) return;
+
+    var applyQuantity = function (nextValue) {
+      var value = sanitizeQuantity(nextValue);
+      qtyInput.value = String(value);
+    };
+
+    qtyWrap.querySelectorAll("[data-qty-action]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var current = sanitizeQuantity(qtyInput.value);
+        var action = btn.getAttribute("data-qty-action");
+        applyQuantity(action === "decrease" ? current - 1 : current + 1);
+      });
+    });
+
+    qtyInput.addEventListener("input", function () {
+      qtyInput.value = qtyInput.value.replace(/[^\d]/g, "");
+    });
+
+    qtyInput.addEventListener("blur", function () {
+      applyQuantity(qtyInput.value);
+    });
+
+    applyQuantity(qtyInput.value || 1);
+  }
+
   document.querySelectorAll("form.cod-form").forEach(function (form) {
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
+    initQuantitySelector(form);
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");
