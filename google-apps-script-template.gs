@@ -2,10 +2,15 @@ function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var payload = JSON.parse(e.postData.contents || "{}");
+    var productName = payload.product || "";
+    var variantModel = payload.variant_model || "";
+    if (variantModel && productName.indexOf(variantModel) === -1) {
+      productName = productName ? productName + " — " + variantModel : variantModel;
+    }
 
     sheet.appendRow([
       new Date(),
-      payload.product || "",
+      productName,
       payload.name || "",
       payload.phone || "",
       payload.city || "",

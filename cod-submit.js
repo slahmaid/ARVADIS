@@ -74,6 +74,7 @@
     var data = new FormData(form);
     var quantity = sanitizeQuantity(data.get("quantity"));
     var productName = (data.get("product") || "").toString();
+    var variantModel = extractVariantModel(form, productName);
     var sheetKey = detectSheetKey(form, { product: productName });
     var pricing = getPricingForForm(form, sheetKey);
     var unitPrice = pricing.unit;
@@ -84,6 +85,7 @@
         : null;
     return {
       product: productName,
+      variant_model: variantModel,
       name: data.get("name") || "",
       phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
@@ -96,6 +98,26 @@
       page_path: window.location.pathname,
       submitted_at: new Date().toISOString(),
     };
+  }
+
+  function extractVariantModel(form, productName) {
+    var selectedVariant = form.querySelector("[data-moka-variant]:checked");
+    if (selectedVariant) {
+      var explicitModel =
+        selectedVariant.getAttribute("data-variant-model") ||
+        selectedVariant.getAttribute("data-model");
+      if (explicitModel) return explicitModel.trim();
+
+      var productLabel = selectedVariant.getAttribute("data-product-label") || "";
+      if (productLabel) {
+        var labelParts = productLabel.split("—");
+        if (labelParts.length > 1) return labelParts[labelParts.length - 1].trim();
+      }
+    }
+
+    var fallback = (productName || "").split("—");
+    if (fallback.length > 1) return fallback[fallback.length - 1].trim();
+    return "";
   }
 
   function roundMoney(value) {
@@ -273,6 +295,7 @@
     // Only send core form fields to the Google Sheet, exclude tracking fields
     var sheetPayload = {
       product: payload.product,
+      variant_model: payload.variant_model,
       name: payload.name,
       phone: payload.phone,
       city: payload.city,
