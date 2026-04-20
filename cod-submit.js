@@ -102,6 +102,12 @@
     return Math.round(value * 100) / 100;
   }
 
+  function formatMad(value) {
+    var n = Number(value);
+    if (!Number.isFinite(n)) return "";
+    return n.toLocaleString("fr-MA") + " درهم";
+  }
+
   function parseDisplayedMad(text) {
     if (text == null) return null;
     var m = String(text)
@@ -344,6 +350,7 @@
     var applyQuantity = function (nextValue) {
       var value = sanitizeQuantity(nextValue);
       qtyInput.value = String(value);
+      qtyInput.dispatchEvent(new Event("cod:quantity-change"));
     };
 
     qtyWrap.querySelectorAll("[data-qty-action]").forEach(function (btn) {
@@ -356,6 +363,7 @@
 
     qtyInput.addEventListener("input", function () {
       qtyInput.value = qtyInput.value.replace(/[^\d]/g, "");
+      qtyInput.dispatchEvent(new Event("cod:quantity-change"));
     });
 
     qtyInput.addEventListener("blur", function () {
@@ -365,11 +373,55 @@
     applyQuantity(qtyInput.value || 1);
   }
 
+  function initTotalPriceHint(form) {
+    var hintNode = form.querySelector(".cod-form__hint");
+    var qtyInput = form.querySelector('input[name="quantity"]');
+    var productInput = form.querySelector('input[name="product"]');
+    if (!hintNode || !qtyInput) return;
+
+    hintNode.classList.add("cod-form__hint--total");
+    var freeDeliveryNote = form.querySelector(".cod-form__free-delivery");
+    if (!freeDeliveryNote) {
+      freeDeliveryNote = document.createElement("p");
+      freeDeliveryNote.className = "cod-form__free-delivery";
+      freeDeliveryNote.textContent = "توصيل مجاني على هذا المنتج";
+      if (hintNode.parentNode) {
+        hintNode.parentNode.insertBefore(freeDeliveryNote, hintNode.nextSibling);
+      }
+    }
+
+    var updateHint = function () {
+      var quantity = sanitizeQuantity(qtyInput.value);
+      var sheetKey = detectSheetKey(form, {
+        product: productInput ? productInput.value || "" : "",
+      });
+      var pricing = getPricingForForm(form, sheetKey);
+
+      if (!Number.isFinite(pricing.unit)) {
+        hintNode.textContent = "المجموع سيظهر بعد تحديد السعر";
+        return;
+      }
+
+      var total = roundMoney(pricing.unit * quantity);
+      hintNode.innerHTML =
+        'المجموع: <span class="cod-form__hint-total-value">' +
+        formatMad(total) +
+        "</span>";
+    };
+
+    qtyInput.addEventListener("cod:quantity-change", updateHint);
+    qtyInput.addEventListener("change", updateHint);
+    form.addEventListener("cod:pricing-change", updateHint);
+
+    updateHint();
+  }
+
   document.querySelectorAll("form.cod-form").forEach(function (form) {
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
     initQuantitySelector(form);
     initAdaptiveInputDirection(form);
+    initTotalPriceHint(form);
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");

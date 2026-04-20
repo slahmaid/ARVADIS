@@ -49,6 +49,10 @@
         if (cardImageSrc) cardMediaImage.src = cardImageSrc;
         if (cardImageAlt) cardMediaImage.alt = cardImageAlt;
       }
+      var form = root.querySelector("form.cod-form");
+      if (form) {
+        form.dispatchEvent(new Event("cod:pricing-change"));
+      }
     }
 
     options.forEach(function (option) {

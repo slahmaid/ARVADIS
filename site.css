@@ -989,10 +989,37 @@
       .cod-form__hint {
         margin: 0;
         font-family: "Cairo", sans-serif;
-        font-size: clamp(0.95rem, 2.15vw, 1.08rem);
-        font-weight: 600;
-        color: #334155;
+        font-size: clamp(1rem, 2.25vw, 1.15rem);
+        font-weight: 800;
+        color: #991b1b;
         line-height: 1.5;
+        text-align: center;
+        padding: 0.6rem 0.75rem;
+        background: linear-gradient(135deg, rgba(254, 242, 242, 0.95), rgba(255, 237, 213, 0.95));
+        border: 1px solid rgba(185, 28, 28, 0.24);
+        border-radius: 12px;
+      }
+
+      .cod-form__hint-total-value {
+        display: inline-block;
+        margin-inline-start: 0.35rem;
+        font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+        font-weight: 900;
+        color: #b91c1c;
+      }
+
+      .cod-form__free-delivery {
+        margin: 0.55rem 0 0;
+        font-family: "Cairo", sans-serif;
+        font-size: clamp(0.92rem, 2.05vw, 1.02rem);
+        font-weight: 800;
+        line-height: 1.4;
+        text-align: center;
+        color: #166534;
+        background: rgba(240, 253, 244, 0.95);
+        border: 2px solid rgba(34, 197, 94, 0.62);
+        border-radius: 10px;
+        padding: 0.45rem 0.65rem;
       }
 
       .cod-form__fields {
