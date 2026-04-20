@@ -819,7 +819,7 @@
 
       .product-card__price-current {
         font-weight: 800;
-        font-size: clamp(1.35rem, 3.1vw, 1.8rem);
+        font-size: clamp(1.6rem, 3.9vw, 2.3rem);
         line-height: 1.15;
         letter-spacing: 0.01em;
         color: #b91c1c;
@@ -827,7 +827,7 @@
       }
 
       .product-card__price-compare {
-        font-size: clamp(0.9rem, 2.1vw, 1.05rem);
+        font-size: clamp(1.05rem, 2.5vw, 1.3rem);
         color: var(--muted);
         text-decoration: line-through;
         font-weight: 600;
@@ -1495,11 +1495,11 @@
       }
 
       .landing-hero__price .product-card__price-current {
-        font-size: clamp(1.55rem, 4vw, 2.2rem);
+        font-size: clamp(1.9rem, 4.9vw, 2.9rem);
       }
 
       .landing-hero__price .product-card__price-compare {
-        font-size: clamp(0.95rem, 2.3vw, 1.12rem);
+        font-size: clamp(1.15rem, 2.8vw, 1.45rem);
       }
 
       .landing-hero__lead {
