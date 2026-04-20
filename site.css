@@ -880,31 +880,77 @@
       }
 
       .projector-picker__text {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
         width: 100%;
-        padding: 0.45rem 0.5rem;
+        padding: 0.42rem 0.5rem;
         font-family: "Cairo", sans-serif;
         font-weight: 600;
         font-size: 0.9rem;
         color: var(--text);
-        background: #fff;
+        background: linear-gradient(160deg, #fff 0%, #f8fafc 100%);
         border: 2px solid rgba(15, 23, 42, 0.18);
         border-radius: 10px;
         cursor: pointer;
         transition:
           border-color 0.15s ease,
           background 0.15s ease,
-          color 0.15s ease;
+          color 0.15s ease,
+          box-shadow 0.15s ease,
+          transform 0.15s ease;
       }
 
       .projector-picker__btn:hover .projector-picker__text {
         border-color: rgba(185, 28, 28, 0.45);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .projector-picker__thumb {
+        width: 3.35rem;
+        height: 2.35rem;
+        border-radius: 8px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        object-fit: cover;
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .projector-picker__meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 0;
+      }
+
+      .projector-picker__label {
+        font-size: 0.96rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .projector-picker__sub {
+        margin-top: 0.1rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #64748b;
+        line-height: 1.2;
       }
 
       .projector-picker__btn.is-active .projector-picker__text {
         color: #fff;
         background: linear-gradient(135deg, #dc2626, #b91c1c);
         border-color: #b91c1c;
+        box-shadow: 0 8px 18px rgba(185, 28, 28, 0.26);
+      }
+
+      .projector-picker__btn.is-active .projector-picker__sub {
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .projector-picker__btn.is-active .projector-picker__thumb {
+        border-color: rgba(255, 255, 255, 0.72);
       }
 
       .projector-picker__input:focus-visible + .projector-picker__text {
@@ -1773,6 +1819,11 @@
           width: 100%;
           max-width: min(100%, 28rem);
           min-width: 0;
+        }
+
+        .landing-hero__price {
+          justify-content: center;
+          width: 100%;
         }
 
         .lp-section__title,
