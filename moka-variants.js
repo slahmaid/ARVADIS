@@ -1,0 +1,62 @@
+(function () {
+  document.querySelectorAll("[data-moka-root]").forEach(function (root) {
+    var options = root.querySelectorAll("[data-moka-variant]");
+    var cur = root.querySelector("[data-moka-current]");
+    var cmp = root.querySelector("[data-moka-compare]");
+    var productInput = root.querySelector('input[name="product"]');
+    var waLink = root.querySelector("a.cod-form__wa");
+    var landingHero = root.closest(".landing-hero");
+    var galleryMain = landingHero ? landingHero.querySelector(".lp-gallery__main") : null;
+    var galleryThumbs = landingHero ? landingHero.querySelectorAll(".lp-thumb[data-lp-src]") : [];
+    if (!options.length || !cur || !cmp) return;
+
+    function activate(option) {
+      options.forEach(function (input) {
+        var wrapper = input.closest(".projector-picker__btn");
+        var on = input === option;
+        input.checked = on;
+        if (wrapper) wrapper.classList.toggle("is-active", on);
+      });
+
+      cur.textContent = option.getAttribute("data-current") || "";
+      cmp.textContent = option.getAttribute("data-compare") || "";
+
+      if (productInput) {
+        var label = option.getAttribute("data-product-label");
+        if (label) productInput.value = label;
+      }
+
+      if (waLink) {
+        var waHref = option.getAttribute("data-wa-href");
+        if (waHref) waLink.setAttribute("href", waHref);
+      }
+
+      if (galleryMain) {
+        var imageSrc = option.getAttribute("data-image-src");
+        var imageAlt = option.getAttribute("data-image-alt");
+        if (imageSrc) galleryMain.src = imageSrc;
+        if (imageAlt) galleryMain.alt = imageAlt;
+        galleryThumbs.forEach(function (thumb) {
+          var on = thumb.getAttribute("data-lp-src") === imageSrc;
+          thumb.classList.toggle("is-active", on);
+          thumb.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+
+      var form = root.querySelector("form.cod-form");
+      if (form) {
+        form.dispatchEvent(new Event("cod:pricing-change"));
+      }
+    }
+
+    options.forEach(function (option) {
+      option.addEventListener("change", function () {
+        if (option.checked) activate(option);
+      });
+    });
+
+    var initial = root.querySelector("[data-moka-variant]:checked");
+    if (initial) activate(initial);
+    else if (options[0]) activate(options[0]);
+  });
+})();
