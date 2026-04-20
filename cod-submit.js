@@ -13,8 +13,14 @@
     if (explicitTarget) {
       return explicitTarget + "?product=" + encodeURIComponent(productName || "");
     }
-    var isProjector = (productName || "").indexOf("بروجيكتور") !== -1;
-    var target = isProjector ? "thank-you-projectors.html" : "thank-you-cameras.html";
+    var normalized = (productName || "").toLowerCase();
+    var isProjector = normalized.indexOf("بروجيكتور") !== -1 || normalized.indexOf("projector") !== -1;
+    var isSaqr = normalized.indexOf("صقر") !== -1 || normalized.indexOf("saqr") !== -1;
+    var target = isProjector
+      ? "thank-you-projectors.html"
+      : isSaqr
+        ? "thank-you-saqr.html"
+        : "thank-you-moka.html";
     return target + "?product=" + encodeURIComponent(productName || "");
   }
 
