@@ -1398,6 +1398,27 @@
         }
       }
 
+      @media (min-width: 901px) {
+        .cod-form__header,
+        .cod-form__label {
+          text-align: center;
+        }
+
+        .cod-form__label-row {
+          justify-content: center;
+        }
+
+        .cod-form__input[name="name"],
+        .cod-form__input[name="city"] {
+          text-align: center;
+        }
+
+        .cod-form__input[name="phone"] {
+          direction: ltr;
+          text-align: center;
+        }
+      }
+
       .landing-hero__content {
         min-width: 0;
         width: 100%;
@@ -1555,7 +1576,7 @@
 
       .landing-hero__actions .cod-form__label:has(input[name="phone"]) {
         direction: ltr;
-        text-align: left;
+        text-align: center;
       }
 
       .landing-hero__actions
