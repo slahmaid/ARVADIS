@@ -299,7 +299,7 @@
 
       .hero {
         margin: 0 auto;
-        max-width: min(100%, 48rem);
+        max-width: 100%;
         min-width: 0;
         width: 100%;
         display: flex;
@@ -312,7 +312,7 @@
           flex-direction: row;
           align-items: stretch;
           gap: clamp(1rem, 2.5vw, 1.5rem);
-          max-width: min(100%, 84rem);
+          max-width: 100%;
         }
 
         .hero__item {
@@ -417,7 +417,7 @@
         }
 
         .announcement-bar__inner {
-          max-width: min(100%, 72rem);
+          max-width: 100%;
         }
       }
 
@@ -455,7 +455,7 @@
       }
 
       .products {
-        max-width: min(100%, 72rem);
+        max-width: 100%;
         margin-inline: auto;
         padding-block: clamp(2rem, 5vw, 3.5rem);
         padding-inline: 0;
@@ -488,7 +488,7 @@
       }
 
       .faq {
-        max-width: min(100%, 72rem);
+        max-width: 100%;
         margin: clamp(2rem, 5vw, 3.5rem) auto 0;
         min-width: 0;
       }
@@ -563,7 +563,7 @@
       }
 
       .site-footer__inner {
-        max-width: min(100%, 72rem);
+        max-width: 100%;
         margin-inline: auto;
         display: flex;
         flex-direction: column;
@@ -1594,7 +1594,7 @@
       }
 
       .landing {
-        max-width: min(100%, 72rem);
+        max-width: 100%;
         margin-inline: auto;
         min-width: 0;
       }
@@ -1973,6 +1973,153 @@
       .nav-link--current {
         color: var(--accent);
         background: var(--surface);
+      }
+
+      @media (min-width: 1024px) {
+        main {
+          padding-inline: clamp(1.5rem, 3.2vw, 3rem);
+        }
+
+        .products,
+        .faq,
+        .landing {
+          padding-inline: clamp(0.4rem, 1vw, 1rem);
+        }
+
+        .products__intro {
+          max-width: 56rem;
+          margin-bottom: clamp(1.6rem, 3vw, 2.2rem);
+        }
+
+        .product-grid {
+          gap: clamp(1.2rem, 2.2vw, 1.9rem);
+        }
+
+        .product-card {
+          border-radius: 22px;
+          box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .product-card__body {
+          padding: clamp(1.2rem, 2vw, 1.45rem) clamp(1.2rem, 2vw, 1.5rem)
+            clamp(1.35rem, 2.2vw, 1.65rem);
+        }
+
+        .testimonials__grid {
+          gap: 1rem;
+        }
+
+        .landing-hero {
+          gap: clamp(1.6rem, 3vw, 2.6rem);
+          align-items: start;
+        }
+
+        .landing-hero__content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .landing-hero__price {
+          justify-content: center;
+          width: 100%;
+        }
+
+        .landing-hero__content .projector-picker__row {
+          width: min(100%, 30rem);
+          margin-inline: auto;
+        }
+
+        .landing-hero__lead {
+          max-width: 34rem;
+          margin-inline: auto;
+        }
+
+        .landing-hero__actions {
+          max-width: min(100%, 30rem);
+          margin-inline: auto;
+        }
+
+        .lp-section {
+          max-width: min(100%, 78rem);
+          margin-inline: auto;
+        }
+
+        .lp-section__title {
+          font-size: clamp(1.55rem, 2.3vw, 2rem);
+          margin-bottom: 1rem;
+          text-align: center;
+        }
+
+        .lp-features {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.95rem 1rem;
+        }
+
+        .lp-features li {
+          min-height: 9.2rem;
+          padding: 1.05rem 1.1rem 1rem;
+          text-align: right;
+          align-content: start;
+        }
+
+        .lp-feature__title {
+          font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+        }
+
+        .lp-feature__desc {
+          font-size: clamp(0.93rem, 1.1vw, 1rem);
+          line-height: 1.68;
+        }
+
+        .lp-feature__badge {
+          justify-self: start;
+          margin-top: 0.2rem;
+        }
+
+        .faq {
+          max-width: min(100%, 78rem);
+          margin-inline: auto;
+        }
+
+        .faq__title {
+          font-size: clamp(1.55rem, 2.2vw, 2rem);
+          margin-bottom: 1rem;
+        }
+
+        .faq__list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.9rem 1rem;
+        }
+
+        .faq__item {
+          min-height: 7.2rem;
+          padding: 0.95rem 1.05rem;
+        }
+
+        .faq__question {
+          font-size: clamp(1.08rem, 1.35vw, 1.22rem);
+          margin-bottom: 0.35rem;
+        }
+
+        .faq__answer {
+          font-size: clamp(0.94rem, 1.05vw, 1rem);
+          line-height: 1.6;
+        }
+      }
+
+      @media (min-width: 1400px) {
+        .faq__list {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1360px) {
+        .product-grid {
+          grid-template-columns: repeat(3, minmax(0, 30rem));
+          justify-content: center;
+        }
       }
 
       @media (max-width: 768px) {
