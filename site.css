@@ -1771,6 +1771,22 @@
           justify-content: center;
         }
 
+        .product-card__price-current {
+          font-size: clamp(1.9rem, 7.2vw, 2.6rem);
+        }
+
+        .product-card__price-compare {
+          font-size: clamp(1.2rem, 4.2vw, 1.55rem);
+        }
+
+        .landing-hero__price .product-card__price-current {
+          font-size: clamp(2.2rem, 8.5vw, 3.1rem);
+        }
+
+        .landing-hero__price .product-card__price-compare {
+          font-size: clamp(1.28rem, 4.8vw, 1.75rem);
+        }
+
         #projectors .product-card__price {
           flex-wrap: wrap;
           width: 100%;
