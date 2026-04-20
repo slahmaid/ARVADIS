@@ -818,16 +818,19 @@
       }
 
       .product-card__price-current {
-        font-weight: 700;
-        font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+        font-weight: 800;
+        font-size: clamp(1.35rem, 3.1vw, 1.8rem);
+        line-height: 1.15;
+        letter-spacing: 0.01em;
         color: #b91c1c;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
       }
 
       .product-card__price-compare {
-        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        font-size: clamp(0.9rem, 2.1vw, 1.05rem);
         color: var(--muted);
         text-decoration: line-through;
-        font-weight: 500;
+        font-weight: 600;
       }
 
       [data-projector-root] {
@@ -1489,6 +1492,14 @@
         align-items: baseline;
         gap: 0.5rem 0.75rem;
         font-family: "Cairo", sans-serif;
+      }
+
+      .landing-hero__price .product-card__price-current {
+        font-size: clamp(1.55rem, 4vw, 2.2rem);
+      }
+
+      .landing-hero__price .product-card__price-compare {
+        font-size: clamp(0.95rem, 2.3vw, 1.12rem);
       }
 
       .landing-hero__lead {
