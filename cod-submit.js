@@ -159,6 +159,51 @@
     return PHONE_RE.test(normalizePhone(phone));
   }
 
+  function hasArabicChars(value) {
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(value || "");
+  }
+
+  function applyInputDirection(input) {
+    if (!input) return;
+    var raw = (input.value || "").trim();
+
+    if (!raw) {
+      input.dir = "auto";
+      input.style.textAlign = "center";
+      return;
+    }
+
+    if (hasArabicChars(raw)) {
+      input.dir = "rtl";
+      input.style.textAlign = "right";
+      return;
+    }
+
+    input.dir = "ltr";
+    input.style.textAlign = "left";
+  }
+
+  function initAdaptiveInputDirection(form) {
+    var adaptiveInputs = form.querySelectorAll(".cod-form__input");
+    if (!adaptiveInputs.length) return;
+
+    adaptiveInputs.forEach(function (input) {
+      applyInputDirection(input);
+
+      input.addEventListener("input", function () {
+        applyInputDirection(input);
+      });
+
+      input.addEventListener("change", function () {
+        applyInputDirection(input);
+      });
+
+      input.addEventListener("blur", function () {
+        applyInputDirection(input);
+      });
+    });
+  }
+
   function makeFallbackWaUrl(form, payload) {
     var waNode = form.querySelector("a.cod-form__wa");
     var base = waNode ? waNode.getAttribute("href") || "" : "";
@@ -324,6 +369,7 @@
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
     initQuantitySelector(form);
+    initAdaptiveInputDirection(form);
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");

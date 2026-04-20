@@ -1036,8 +1036,6 @@
         font-size: clamp(1rem, 2.25vw, 1.14rem);
         color: var(--text);
         background: #fff;
-        direction: ltr;
-        text-align: left;
         border: 1px solid rgba(15, 23, 42, 0.16);
         border-radius: 12px;
         transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -1135,6 +1133,11 @@
       .cod-form__submit:focus-visible {
         outline: 3px solid rgba(252, 211, 77, 0.85);
         outline-offset: 3px;
+      }
+
+      .cod-form__input[name="phone"] {
+        direction: ltr;
+        text-align: left;
       }
 
       .cod-form__submit {
@@ -1405,6 +1408,16 @@
         .cod-form__label-row {
           justify-content: center;
         }
+
+        .cod-form__input[name="name"],
+        .cod-form__input[name="city"] {
+          text-align: center;
+        }
+
+        .cod-form__input[name="phone"] {
+          direction: ltr;
+          text-align: center;
+        }
       }
 
       .landing-hero__content {
@@ -1555,6 +1568,11 @@
       .landing-hero__actions .cod-form__hint {
         font-size: clamp(1rem, 2.2vw, 1.15rem);
         font-weight: 700;
+      }
+
+      .landing-hero__actions .cod-form__input[name="phone"] {
+        direction: ltr;
+        text-align: left;
       }
 
       .landing-hero__actions .cod-form__label:has(input[name="phone"]) {
@@ -1829,6 +1847,21 @@
         }
 
         .cod-form__submit-note {
+          text-align: center;
+        }
+
+        .cod-form__input[name="name"],
+        .cod-form__input[name="city"] {
+          text-align: center;
+        }
+
+        .cod-form__input[name="phone"] {
+          direction: ltr;
+          text-align: center;
+        }
+
+        .landing-hero__actions .cod-form__input[name="phone"] {
+          direction: ltr;
           text-align: center;
         }
 
