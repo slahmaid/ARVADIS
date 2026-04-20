@@ -96,6 +96,57 @@
         </div>
       </section>
 
+      <section class="testimonials" aria-labelledby="testimonials-title">
+        <h2 class="testimonials__title" id="testimonials-title">آراء عملائنا بعد التركيب</h2>
+        <div class="testimonials__grid">
+          <figure class="testimonial-card">
+            <img
+              class="testimonial-card__thumb"
+              src="img/Reviews/Projector.webp"
+              alt="مراجعة عميل بروجيكتور"
+              width="72"
+              height="72"
+              loading="lazy"
+              decoding="async"
+            />
+            <blockquote>
+              "طلبت بروجيكتور 400 واط، وصلني بسرعة وكان الفرق واضح في الإضاءة. التعامل كان محترم جدًا."
+            </blockquote>
+            <figcaption>يوسف - القنيطرة (بروجيكتور 400 واط)</figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <img
+              class="testimonial-card__thumb"
+              src="img/Reviews/Moka.jpg"
+              alt="مراجعة عميل موكا برو ماكس"
+              width="72"
+              height="72"
+              loading="lazy"
+              decoding="async"
+            />
+            <blockquote>
+              "موكا برو ماكس خدامة مزيان فالساحة، والتأكيد الهاتفي قبل التوصيل عطاني ثقة كبيرة."
+            </blockquote>
+            <figcaption>سمية - مراكش (موكا برو ماكس WiFi)</figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <img
+              class="testimonial-card__thumb"
+              src="img/Reviews/Saqr.jpg"
+              alt="مراجعة عميل صقر"
+              width="72"
+              height="72"
+              loading="lazy"
+              decoding="async"
+            />
+            <blockquote>
+              "صقر كانت مناسبة للضيعة، الزوم ممتاز والدعم جاوبني بسرعة على واتساب."
+            </blockquote>
+            <figcaption>حمزة - الجديدة (صقر 4G)</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section class="products" id="products" aria-labelledby="products-title">
         <h2 id="products-title" class="visually-hidden">المنتجات</h2>
         <p class="products__intro">
@@ -119,17 +170,79 @@
                 />
               </a>
             </div>
-            <div class="product-card__body">
+            <div class="product-card__body" data-moka-root>
               <h3 class="product-card__title">
                 <a class="product-card__title-link" href="moka.html"
                   >موكا برو ماكس</a>
               </h3>
               <p class="product-card__price">
                 <span class="product-card__price-current"
-                  ><span dir="ltr">699</span>&nbsp;درهم</span>
+                  ><span data-moka-current dir="ltr">699</span>&nbsp;درهم</span>
                 <span class="product-card__price-compare"
-                  ><span dir="ltr">899.99</span>&nbsp;درهم</span>
+                  ><span data-moka-compare dir="ltr">899.99</span>&nbsp;درهم</span>
               </p>
+              <fieldset class="projector-picker__row">
+                <legend class="visually-hidden">نوع موكا برو ماكس</legend>
+                <label class="projector-picker__btn is-active">
+                  <input
+                    class="projector-picker__input"
+                    type="radio"
+                    name="moka-variant-card"
+                    data-moka-variant
+                    data-current="699"
+                    data-compare="899.99"
+                    data-product-label="موكا برو ماكس — WiFi"
+                    data-wa-href="https://wa.me/212691575625?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%B7%D9%84%D8%A8%20%D9%85%D9%88%D9%83%D8%A7%20%D8%A8%D8%B1%D9%88%20%D9%85%D8%A7%D9%83%D8%B3%20WiFi%20%D9%85%D9%86%20%D8%A3%D8%B1%D9%81%D8%A7%D8%AF%D9%8A%D8%B3.%20%D8%A7%D9%84%D8%B1%D8%AC%D8%A7%D8%A1%20%D8%AA%D8%A3%D9%83%D9%8A%D8%AF%20%D8%A7%D9%84%D8%B3%D8%B9%D8%B1%20%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%B5%D9%8A%D9%84."
+                    data-image-src="img/Moka Pro Max/MOKA.webp"
+                    data-image-alt="موكا برو ماكس واي فاي"
+                    checked
+                  />
+                  <span class="projector-picker__text">
+                    <img
+                      class="projector-picker__thumb"
+                      src="img/Moka Pro Max/MOKA.webp"
+                      alt=""
+                      width="84"
+                      height="58"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="projector-picker__meta">
+                      <span class="projector-picker__label">WiFi</span>
+                      <span class="projector-picker__sub">ابتداءً من 699 درهم</span>
+                    </span>
+                  </span>
+                </label>
+                <label class="projector-picker__btn">
+                  <input
+                    class="projector-picker__input"
+                    type="radio"
+                    name="moka-variant-card"
+                    data-moka-variant
+                    data-current="699"
+                    data-compare="899.99"
+                    data-product-label="موكا برو ماكس — 4G"
+                    data-wa-href="https://wa.me/212691575625?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%B7%D9%84%D8%A8%20%D9%85%D9%88%D9%83%D8%A7%20%D8%A8%D8%B1%D9%88%20%D9%85%D8%A7%D9%83%D8%B3%204G%20%D9%85%D9%86%20%D8%A3%D8%B1%D9%81%D8%A7%D8%AF%D9%8A%D8%B3.%20%D8%A7%D9%84%D8%B1%D8%AC%D8%A7%D8%A1%20%D8%AA%D8%A3%D9%83%D9%8A%D8%AF%20%D8%A7%D9%84%D8%B3%D8%B9%D8%B1%20%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%B5%D9%8A%D9%84."
+                    data-image-src="img/Moka Pro Max/MOKA.webp"
+                    data-image-alt="موكا برو ماكس 4G"
+                  />
+                  <span class="projector-picker__text">
+                    <img
+                      class="projector-picker__thumb"
+                      src="img/Moka Pro Max/MOKA.webp"
+                      alt=""
+                      width="84"
+                      height="58"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="projector-picker__meta">
+                      <span class="projector-picker__label">4G</span>
+                      <span class="projector-picker__sub">ابتداءً من 699 درهم</span>
+                    </span>
+                  </span>
+                </label>
+              </fieldset>
               <p class="product-card__subtitle">
                 كاميرا شمسية ذكية للمنزل والفيلا: <strong>واي فاي أو 4G</strong> حسب الطراز،
                 <strong>زووم بصري</strong> ورؤية ليلية واضحة.
@@ -150,7 +263,7 @@
                         بعد الإرسال نتصل بك هاتفيًا لتأكيد الطلب والعنوان. الدفع عند الاستلام.
                       </p>
                     </div>
-                    <input type="hidden" name="product" value="موكا برو ماكس" />
+                    <input type="hidden" name="product" value="موكا برو ماكس — WiFi" />
                     <div class="cod-form__fields">
                       <label class="cod-form__label">
                         <span class="cod-form__label-row">
@@ -437,6 +550,12 @@
                 <strong>400 واط</strong> مع <strong>ضمان 3 سنوات</strong>.
               </p>
               <div data-projector-root>
+                <p class="product-card__price">
+                  <span class="product-card__price-current"
+                    ><span data-projector-current dir="ltr">699</span>&nbsp;درهم</span>
+                  <span class="product-card__price-compare"
+                    ><span data-projector-compare dir="ltr">799</span>&nbsp;درهم</span>
+                </p>
                 <fieldset class="projector-picker__row">
                   <legend class="visually-hidden">قدرة البروجيكتور</legend>
                   <label class="projector-picker__btn is-active">
@@ -453,7 +572,21 @@
                       data-image-alt="بروجيكتور LED شمسي 300 واط"
                       checked
                     />
-                    <span class="projector-picker__text">300 واط</span>
+                    <span class="projector-picker__text">
+                      <img
+                        class="projector-picker__thumb"
+                        src="img/Projectors/300W.webp"
+                        alt=""
+                        width="84"
+                        height="58"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span class="projector-picker__meta">
+                        <span class="projector-picker__label">300 واط</span>
+                        <span class="projector-picker__sub">ابتداءً من 699 درهم</span>
+                      </span>
+                    </span>
                   </label>
                   <label class="projector-picker__btn">
                     <input
@@ -468,15 +601,23 @@
                       data-image-src="img/Projectors/400W.webp"
                       data-image-alt="بروجيكتور LED شمسي 400 واط"
                     />
-                    <span class="projector-picker__text">400 واط</span>
+                    <span class="projector-picker__text">
+                      <img
+                        class="projector-picker__thumb"
+                        src="img/Projectors/400W.webp"
+                        alt=""
+                        width="84"
+                        height="58"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span class="projector-picker__meta">
+                        <span class="projector-picker__label">400 واط</span>
+                        <span class="projector-picker__sub">ابتداءً من 799 درهم</span>
+                      </span>
+                    </span>
                   </label>
                 </fieldset>
-                <p class="product-card__price">
-                  <span class="product-card__price-current"
-                    ><span data-projector-current dir="ltr">699</span>&nbsp;درهم</span>
-                  <span class="product-card__price-compare"
-                    ><span data-projector-compare dir="ltr">799</span>&nbsp;درهم</span>
-                </p>
               <div class="product-card__actions">
                 <form
                   class="cod-form cod-form--card"
@@ -650,6 +791,7 @@
           </article>
         </div>
       </section>
+
     </main>
 
     <footer class="site-footer" id="contact" aria-label="تذييل الصفحة">
@@ -699,6 +841,7 @@
     >
 
     <script src="projector-variants.js"></script>
+    <script src="moka-variants.js"></script>
     <script src="cod-submit.js?v=20260415"></script>
     <script src="floating-wa.js"></script>
     <script>

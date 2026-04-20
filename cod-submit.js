@@ -416,12 +416,33 @@
     updateHint();
   }
 
+  function ensureFormConversionBoosters(form) {
+    var submitBtn = form.querySelector(".cod-form__submit");
+    if (submitBtn && !form.querySelector(".cod-form__urgency")) {
+      var urgency = document.createElement("p");
+      urgency.className = "cod-form__urgency";
+      urgency.textContent = "العرض متاح الآن - أكد طلبك قبل نفاد الكمية.";
+      submitBtn.parentNode.insertBefore(urgency, submitBtn);
+    }
+
+    if (!form.querySelector(".cod-form__trust")) {
+      var trust = document.createElement("div");
+      trust.className = "cod-form__trust";
+      trust.innerHTML =
+        '<span class="cod-form__trust-item">توصيل مجاني</span>' +
+        '<span class="cod-form__trust-item">دفع عند الاستلام</span>' +
+        '<span class="cod-form__trust-item">تأكيد هاتفي سريع</span>';
+      form.appendChild(trust);
+    }
+  }
+
   document.querySelectorAll("form.cod-form").forEach(function (form) {
     var errorNode = ensureErrorNode(form);
     var phoneInput = form.querySelector('input[name="phone"]');
     initQuantitySelector(form);
     initAdaptiveInputDirection(form);
     initTotalPriceHint(form);
+    ensureFormConversionBoosters(form);
     if (phoneInput) {
       phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");

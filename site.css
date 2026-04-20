@@ -800,6 +800,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        align-items: center;
       }
 
       .product-card__title {
@@ -809,6 +810,7 @@
         font-size: clamp(1.25rem, 2.9vw, 1.5rem);
         color: var(--text);
         line-height: 1.35;
+        text-align: center;
       }
 
       .product-card__price {
@@ -816,6 +818,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: baseline;
+        justify-content: center;
         gap: 0.5rem 0.75rem;
         font-family: "Cairo", sans-serif;
       }
@@ -982,11 +985,13 @@
         color: var(--muted);
         line-height: 1.65;
         flex: 1;
+        text-align: center;
       }
 
       .product-card__actions {
         margin-top: auto;
         padding-top: clamp(0.85rem, 2.5vw, 1.1rem);
+        width: 100%;
       }
 
       .cod-form {
@@ -1066,6 +1071,141 @@
         border: 2px solid rgba(34, 197, 94, 0.62);
         border-radius: 10px;
         padding: 0.45rem 0.65rem;
+      }
+
+      .cod-form__urgency {
+        margin: 0.7rem 0 0.45rem;
+        font-family: "Cairo", sans-serif;
+        font-size: clamp(0.9rem, 2.05vw, 1rem);
+        font-weight: 800;
+        text-align: center;
+        color: #991b1b;
+        background: rgba(254, 242, 242, 0.98);
+        border: 1px dashed rgba(220, 38, 38, 0.5);
+        border-radius: 10px;
+        padding: 0.45rem 0.6rem;
+        line-height: 1.45;
+      }
+
+      .cod-form__trust {
+        margin-top: 0.62rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.35rem;
+      }
+
+      .cod-form__trust-item {
+        font-family: "Cairo", sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #14532d;
+        background: #f0fdf4;
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        border-radius: 999px;
+        padding: 0.24rem 0.58rem;
+        line-height: 1.2;
+      }
+
+      .testimonials {
+        margin: clamp(1.8rem, 4.5vw, 2.7rem) 0;
+      }
+
+      .testimonials__title {
+        margin: 0 0 0.85rem;
+        font-family: "Cairo", sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.35rem, 3vw, 1.8rem);
+        text-align: center;
+        color: var(--text);
+      }
+
+      .testimonials__grid {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .testimonial-card {
+        margin: 0;
+        padding: 0.95rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+        display: grid;
+        grid-template-columns: 4.5rem minmax(0, 1fr);
+        align-items: start;
+        gap: 0.65rem 0.85rem;
+      }
+
+      .testimonial-card__thumb {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 10px;
+        object-fit: cover;
+        aspect-ratio: 1 / 1;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      }
+
+      .testimonial-card blockquote {
+        margin: 0 0 0.4rem;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.97rem;
+        line-height: 1.7;
+        color: #1e293b;
+        grid-column: 2;
+      }
+
+      .testimonial-card figcaption {
+        font-family: "Cairo", sans-serif;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #475569;
+        grid-column: 2;
+      }
+
+      .tracking-notes {
+        margin: clamp(1.4rem, 3.6vw, 2.1rem) 0 0;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 14px;
+        background: #ffffff;
+        overflow: hidden;
+      }
+
+      .tracking-notes summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 0.75rem 0.95rem;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+
+      .tracking-notes summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .tracking-notes__content {
+        margin: 0;
+        padding: 0.85rem 1rem 1rem;
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .tracking-notes__content li {
+        font-family: "Cairo", sans-serif;
+        font-size: 0.9rem;
+        color: #334155;
+        line-height: 1.55;
+      }
+
+      @media (min-width: 768px) {
+        .testimonials__grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
       }
 
       .cod-form__fields {
@@ -1679,17 +1819,75 @@
         gap: 0.75rem;
       }
 
+      .lp-features--continued {
+        margin-top: 0.75rem;
+      }
+
       .lp-features li {
         margin: 0;
-        padding: 0.95rem 1.1rem;
+        padding: 0.95rem 1.05rem 0.9rem;
         font-family: "Cairo", sans-serif;
         font-size: clamp(0.95rem, 2.2vw, 1.02rem);
         line-height: 1.55;
         color: var(--text);
-        background: #fff;
-        border: 1px solid var(--border);
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid rgba(15, 23, 42, 0.1);
         border-radius: 14px;
-        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 3px 14px rgba(15, 23, 42, 0.06);
+        display: grid;
+        gap: 0.32rem;
+      }
+
+      .lp-feature__title {
+        font-family: "Cairo", sans-serif;
+        font-size: clamp(1rem, 2.3vw, 1.12rem);
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+      }
+
+      .lp-feature__desc {
+        font-family: "Cairo", sans-serif;
+        font-size: clamp(0.9rem, 2.05vw, 0.98rem);
+        font-weight: 600;
+        color: #475569;
+        line-height: 1.62;
+      }
+
+      .lp-feature__badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        max-width: 100%;
+        margin-top: 0.12rem;
+        padding: 0.23rem 0.58rem;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 119, 6, 0.35);
+        background: rgba(255, 247, 237, 0.95);
+        color: #b45309;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.76rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .lp-feature-video {
+        width: min(100%, 28rem);
+        aspect-ratio: 1 / 1;
+        margin: 0.9rem auto;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+        background: #000;
+      }
+
+      .lp-feature-video video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
 
       .lp-related {
@@ -1838,6 +2036,10 @@
           padding: 0.72rem 0.82rem;
           border-radius: 12px;
           font-size: clamp(0.86rem, 2.2vw, 0.95rem);
+        }
+
+        .lp-feature__badge {
+          justify-self: center;
         }
 
         .lp-related__links {
