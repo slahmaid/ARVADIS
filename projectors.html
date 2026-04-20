@@ -388,7 +388,15 @@
           </ul>
 
           <div class="lp-feature-video" aria-label="فيديو عرض بروجيكتورات أرفاديس">
-            <video autoplay muted loop playsinline preload="metadata">
+            <video
+              class="lp-feature-video__media"
+              autoplay
+              muted
+              loop
+              playsinline
+              webkit-playsinline
+              preload="auto"
+            >
               <source src="img/Projector-Video.mp4" type="video/mp4" />
             </video>
           </div>
@@ -599,5 +607,31 @@
     <script src="projector-variants.js"></script>
     <script src="cod-submit.js?v=20260415"></script>
     <script src="floating-wa.js"></script>
+    <script>
+      (function () {
+        var featureVideo = document.querySelector(".lp-feature-video__media");
+        if (!featureVideo) return;
+
+        featureVideo.muted = true;
+        featureVideo.defaultMuted = true;
+        featureVideo.setAttribute("muted", "");
+
+        function tryAutoPlay() {
+          var playPromise = featureVideo.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(function () {});
+          }
+        }
+
+        featureVideo.addEventListener("loadedmetadata", tryAutoPlay);
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") {
+            tryAutoPlay();
+          }
+        });
+
+        tryAutoPlay();
+      })();
+    </script>
   </body>
 </html>
