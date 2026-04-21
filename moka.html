@@ -573,5 +573,60 @@
     <script src="moka-variants.js"></script>
     <script src="cod-submit.js?v=20260415"></script>
     <script src="floating-wa.js"></script>
+    <script>
+      (function () {
+        var fired = false;
+        function trackMokaInitiateCheckout() {
+          if (fired) return;
+          fired = true;
+          if (typeof fbq === "function") {
+            fbq("track", "InitiateCheckout", {
+              content_name: "Moka Pro Max",
+              currency: "MAD",
+              value: 0,
+            });
+          }
+        }
+        var form = document.querySelector(".landing--moka .cod-form");
+        if (!form) return;
+        form.addEventListener("focusin", function (e) {
+          var t = e.target;
+          if (
+            t &&
+            t.matches &&
+            t.matches("input:not([type=hidden]), textarea, select")
+          ) {
+            trackMokaInitiateCheckout();
+          }
+        });
+        var submit = form.querySelector(".cod-form__submit");
+        if (submit) {
+          submit.addEventListener("click", trackMokaInitiateCheckout);
+        }
+      })();
+      (function () {
+        function trackWhatsAppContact() {
+          if (typeof fbq === "function") {
+            fbq("trackCustom", "WhatsAppContact", {
+              content_name: "Moka Pro Max Inquiry",
+              status: "Lead",
+            });
+          }
+        }
+        document.addEventListener(
+          "click",
+          function (e) {
+            var a = e.target.closest && e.target.closest("a[href]");
+            if (!a || !a.href) return;
+            if (
+              /^https?:\/\/(wa\.me|api\.whatsapp\.com)(\/|$|\?)/i.test(a.href)
+            ) {
+              trackWhatsAppContact();
+            }
+          },
+          true
+        );
+      })();
+    </script>
   </body>
 </html>
