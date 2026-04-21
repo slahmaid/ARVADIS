@@ -31,24 +31,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="site.css" />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "أرفاديس",
-        "url": "https://arvadis.ma",
-        "logo": "https://arvadis.ma/ARVADIS-AR-logo.webp",
-        "contactPoint": [
-          {
-            "@type": "ContactPoint",
-            "telephone": "+212691575625",
-            "contactType": "customer support",
-            "areaServed": "MA",
-            "availableLanguage": ["ar"]
-          }
-        ]
-      }
-    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">تجاوز إلى المحتوى</a>
@@ -79,6 +61,8 @@
             <img
               src="img/Hero/Hero-Desktop.webp"
               alt="منتجات أرفاديس للمراقبة والإضاءة بالطاقة الشمسية"
+              loading="eager"
+              decoding="async"
             />
           </picture>
         </figure>
@@ -804,6 +788,8 @@
               alt="أرفاديس"
               width="120"
               height="34"
+              loading="lazy"
+              decoding="async"
             />
           </span>
           <div class="site-footer__text-col">
@@ -840,10 +826,28 @@
       >واتساب</a
     >
 
-    <script src="projector-variants.js"></script>
-    <script src="moka-variants.js"></script>
-    <script src="cod-submit.js?v=20260415"></script>
-    <script src="floating-wa.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "أرفاديس",
+        "url": "https://arvadis.ma",
+        "logo": "https://arvadis.ma/ARVADIS-AR-logo.webp",
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "telephone": "+212691575625",
+            "contactType": "customer support",
+            "areaServed": "MA",
+            "availableLanguage": ["ar"]
+          }
+        ]
+      }
+    </script>
+    <script src="projector-variants.js" defer></script>
+    <script src="moka-variants.js" defer></script>
+    <script src="cod-submit.js?v=20260415" defer></script>
+    <script src="floating-wa.js" defer></script>
     <script>
       (function () {
         var saqrCardBasePrice = 1899;
