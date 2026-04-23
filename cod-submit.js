@@ -1,5 +1,4 @@
 (function () {
-  var ENDPOINT = "api/submit-cod.php";
   var PHONE_RE = /^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/;
   // Paste your deployed Google Apps Script Web App URLs here.
   var GOOGLE_SHEETS_ENDPOINTS = {
@@ -22,6 +21,35 @@
         ? "thank-you-saqr.html"
         : "thank-you-moka.html";
     return target + "?product=" + encodeURIComponent(productName || "");
+  }
+
+  function appendThankYouParams(baseUrl, params) {
+    var sep = baseUrl.indexOf("?") === -1 ? "?" : "&";
+    return (
+      baseUrl +
+      sep +
+      Object.keys(params)
+        .map(function (key) {
+          return encodeURIComponent(key) + "=" + encodeURIComponent(params[key] == null ? "" : String(params[key]));
+        })
+        .join("&")
+    );
+  }
+
+  function generateEventId() {
+    var randomToken = "";
+    if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+      var bytes = new Uint8Array(8);
+      crypto.getRandomValues(bytes);
+      randomToken = Array.prototype.map
+        .call(bytes, function (b) {
+          return ("0" + b.toString(16)).slice(-2);
+        })
+        .join("");
+    } else {
+      randomToken = Math.random().toString(16).slice(2, 18);
+    }
+    return "arvadis_evt_" + Date.now() + "_" + randomToken;
   }
 
   function detectSheetKey(form, payload) {
@@ -83,10 +111,14 @@
       unitPrice != null && Number.isFinite(unitPrice)
         ? roundMoney(unitPrice * quantity)
         : null;
+    var firstName = String(data.get("first_name") || data.get("name") || "")
+      .trim()
+      .split(/\s+/)[0];
     return {
       product: productName,
       variant_model: variantModel,
-      name: data.get("name") || "",
+      first_name: firstName,
+      name: data.get("first_name") || data.get("name") || "",
       phone: normalizePhone(data.get("phone") || ""),
       city: data.get("city") || "",
       quantity: quantity,
@@ -97,6 +129,7 @@
       page_url: window.location.href,
       page_path: window.location.pathname,
       submitted_at: new Date().toISOString(),
+      event_id: generateEventId(),
     };
   }
 
@@ -183,8 +216,46 @@
     return (phone || "").replace(/[.\-\s()]/g, "");
   }
 
+  function toLocalMoroccanPhone(phone) {
+    var normalized = normalizePhone(phone);
+    if (/^\+212[67][0-9]{8}$/.test(normalized)) {
+      return "0" + normalized.slice(4);
+    }
+    return normalized;
+  }
+
   function isValidPhone(phone) {
     return PHONE_RE.test(normalizePhone(phone));
+  }
+
+  function updatePhoneValidationState(phoneInput) {
+    if (!phoneInput) return;
+    var raw = phoneInput.value || "";
+    var normalized = normalizePhone(raw);
+    var localPhone = toLocalMoroccanPhone(normalized);
+    var valid = isValidPhone(normalized);
+    var completedInput = localPhone.length >= 10;
+
+    phoneInput.classList.remove("cod-form__input--valid", "cod-form__input--invalid");
+
+    if (!normalized) {
+      phoneInput.setCustomValidity("");
+      return;
+    }
+
+    if (valid) {
+      phoneInput.classList.add("cod-form__input--valid");
+      phoneInput.setCustomValidity("");
+      return;
+    }
+
+    if (completedInput) {
+      phoneInput.classList.add("cod-form__input--invalid");
+      phoneInput.setCustomValidity("المرجو إدخال رقم مغربي صحيح.");
+      return;
+    }
+
+    phoneInput.setCustomValidity("");
   }
 
   function hasArabicChars(value) {
@@ -257,34 +328,6 @@
     return hasText
       ? base + "%0A%0A" + encodeURIComponent(details)
       : base + (base.indexOf("?") === -1 ? "?text=" : "&text=") + encodeURIComponent(details);
-  }
-
-  function submitToLocalApi(payload) {
-    return fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) {
-        return res
-          .json()
-          .catch(function () {
-            return {};
-          })
-          .then(function (data) {
-            if (!res.ok || data.ok !== true) {
-              throw new Error((data && data.error) || "تعذر حفظ الطلب في النظام المحلي.");
-            }
-            return data;
-          });
-      });
-  }
-
-  /** Best-effort CSV backup when PHP is available; never blocks static hosts (GitHub Pages). */
-  function submitToLocalApiSilently(payload) {
-    submitToLocalApi(payload).catch(function () {});
   }
 
   function submitToGoogleSheet(payload, sheetKey) {
@@ -435,28 +478,11 @@
     qtyInput.addEventListener("cod:quantity-change", updateHint);
     qtyInput.addEventListener("change", updateHint);
     form.addEventListener("cod:pricing-change", updateHint);
+    form.querySelectorAll("[data-moka-variant], [data-projector-watt]").forEach(function (variantInput) {
+      variantInput.addEventListener("change", updateHint);
+    });
 
     updateHint();
-  }
-
-  function ensureFormConversionBoosters(form) {
-    var submitBtn = form.querySelector(".cod-form__submit");
-    if (submitBtn && !form.querySelector(".cod-form__urgency")) {
-      var urgency = document.createElement("p");
-      urgency.className = "cod-form__urgency";
-      urgency.textContent = "العرض متاح الآن - أكد طلبك قبل نفاد الكمية.";
-      submitBtn.parentNode.insertBefore(urgency, submitBtn);
-    }
-
-    if (!form.querySelector(".cod-form__trust")) {
-      var trust = document.createElement("div");
-      trust.className = "cod-form__trust";
-      trust.innerHTML =
-        '<span class="cod-form__trust-item">توصيل مجاني</span>' +
-        '<span class="cod-form__trust-item">دفع عند الاستلام</span>' +
-        '<span class="cod-form__trust-item">تأكيد هاتفي سريع</span>';
-      form.appendChild(trust);
-    }
   }
 
   document.querySelectorAll("form.cod-form").forEach(function (form) {
@@ -465,13 +491,39 @@
     initQuantitySelector(form);
     initAdaptiveInputDirection(form);
     initTotalPriceHint(form);
-    ensureFormConversionBoosters(form);
+    var initiateCheckoutFired = false;
+    function trackInitiateCheckout() {
+      if (initiateCheckoutFired) return;
+      initiateCheckoutFired = true;
+      if (typeof fbq === "function") {
+        fbq("track", "InitiateCheckout", {
+          currency: "MAD",
+          value: 0,
+          content_name: (form.querySelector('input[name="product"]') || {}).value || "Order Form",
+        });
+      }
+    }
+    form.addEventListener("focusin", function (e) {
+      var t = e.target;
+      if (t && t.matches && t.matches("input:not([type=hidden]), textarea, select")) {
+        trackInitiateCheckout();
+      }
+    });
+    var submitBtn = form.querySelector(".cod-form__submit");
+    if (submitBtn) submitBtn.addEventListener("click", trackInitiateCheckout);
+
     if (phoneInput) {
-      phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
+      if (!phoneInput.getAttribute("pattern")) {
+        phoneInput.setAttribute("pattern", "(?:\\+212[67][0-9]{8}|0[67][0-9]{8})");
+      }
       phoneInput.setAttribute("title", "أدخل رقمًا مغربيًا صحيحًا: 06XXXXXXXX أو 07XXXXXXXX أو +2126XXXXXXXX أو +2127XXXXXXXX");
       phoneInput.addEventListener("input", function () {
-        phoneInput.setCustomValidity("");
+        updatePhoneValidationState(phoneInput);
       });
+      phoneInput.addEventListener("blur", function () {
+        updatePhoneValidationState(phoneInput);
+      });
+      updatePhoneValidationState(phoneInput);
     }
 
     form.addEventListener("submit", function (e) {
@@ -479,8 +531,8 @@
       errorNode.style.display = "none";
       errorNode.innerHTML = "";
 
-      if (phoneInput && !isValidPhone(phoneInput.value)) {
-        phoneInput.setCustomValidity("المرجو إدخال رقم مغربي صحيح.");
+      if (phoneInput) {
+        updatePhoneValidationState(phoneInput);
       }
 
       if (!form.checkValidity()) {
@@ -492,12 +544,14 @@
       var productName = payload.product;
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
-      // Local PHP backup only (e.g. Apache). On static hosts this fails harmlessly — never block UX.
-      submitToLocalApiSilently(payload);
-
       submitToGoogleSheet(payload, sheetKey)
         .then(function () {
           var target = getThankYouUrl(form, productName);
+          target = appendThankYouParams(target, {
+            event_id: payload.event_id,
+            value: payload.line_total_mad != null ? payload.line_total_mad : payload.unit_price_mad || 0,
+            currency: "MAD",
+          });
           if (typeof window.requestAnimationFrame === "function") {
             window.requestAnimationFrame(function () {
               window.location.assign(target);

@@ -662,31 +662,30 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 3.1rem;
+        width: 3.1rem;
         height: 3.1rem;
-        padding-inline: 0.85rem;
-        border-radius: 999px;
-        background: linear-gradient(145deg, #2fe077 0%, #25d366 45%, #1ebe5d 100%);
-        color: #fff;
-        font-family: "Cairo", sans-serif;
-        font-size: 0.9rem;
-        font-weight: 700;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
         text-decoration: none;
-        border: 2px solid rgba(255, 255, 255, 0.28);
-        box-shadow:
-          0 10px 26px rgba(37, 211, 102, 0.38),
-          0 0 0 1px rgba(15, 23, 42, 0.06);
+        border: none;
+        box-shadow: none;
         transform: translateY(calc(-1 * var(--lift)));
         transition:
           transform 0.2s var(--ease-smooth),
           box-shadow 0.2s ease;
       }
 
+      .whatsapp-float img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+      }
+
       .whatsapp-float:hover {
         --lift: 3px;
-        box-shadow:
-          0 16px 34px rgba(37, 211, 102, 0.48),
-          0 0 0 1px rgba(15, 23, 42, 0.06);
+        box-shadow: none;
       }
 
       @media (max-width: 640px) {
@@ -1244,14 +1243,16 @@
         box-sizing: border-box;
         width: 100%;
         min-height: 3.2rem;
-        padding: 0.72rem 1rem;
+        padding-block: 0.8rem;
+        padding-inline: 1rem;
         font-family: "Cairo", sans-serif;
         font-size: clamp(1rem, 2.25vw, 1.14rem);
         color: var(--text);
         background: #fff;
-        border: 1px solid rgba(15, 23, 42, 0.16);
+        border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 12px;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        transform: scale(1);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
       }
 
       .cod-form__input::placeholder {
@@ -1268,11 +1269,23 @@
         outline: none;
         border-color: var(--accent);
         box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.22);
+        transform: scale(1.01);
       }
 
       .cod-form__input:focus-visible {
         border-color: var(--accent);
         box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.28);
+        transform: scale(1.01);
+      }
+
+      .cod-form__input--valid {
+        border-color: rgba(34, 197, 94, 0.8) !important;
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+      }
+
+      .cod-form__input--invalid {
+        border-color: rgba(220, 38, 38, 0.78) !important;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.13);
       }
 
       .cod-form__label--quantity {
@@ -1357,7 +1370,8 @@
         box-sizing: border-box;
         width: 100%;
         margin-top: clamp(0.85rem, 2.2vw, 1.05rem);
-        padding: 0.72rem 1rem;
+        padding-block: 0.72rem;
+        padding-inline: 1rem;
         min-height: 3.25rem;
         font-family: "Cairo", sans-serif;
         font-weight: 800;
@@ -1365,10 +1379,10 @@
         color: #fff;
         background: linear-gradient(135deg, #dc2626, #b91c1c);
         border: none;
-        border-radius: 14px;
+        border-radius: 16px;
         cursor: pointer;
         box-shadow: 0 4px 16px rgba(185, 28, 28, 0.35);
-        transition: box-shadow 0.2s ease, background 0.15s ease;
+        transition: box-shadow 0.2s ease, background 0.15s ease, transform 0.15s ease;
         animation: cta-float 1s ease-in-out infinite;
         will-change: transform;
       }
@@ -1378,7 +1392,7 @@
           transform: translateY(0);
         }
         50% {
-          transform: translateY(-4px);
+          transform: translateY(-2.5px);
         }
         100% {
           transform: translateY(0);
@@ -1386,8 +1400,12 @@
       }
 
       .cod-form__submit:hover {
-        box-shadow: 0 8px 22px rgba(185, 28, 28, 0.45);
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow:
+          0 10px 26px rgba(185, 28, 28, 0.28),
+          0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+          0 1px 0 rgba(255, 255, 255, 0.38) inset;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.92), rgba(220, 38, 38, 0.9));
+        backdrop-filter: blur(6px) saturate(115%);
       }
 
       .cod-form__submit:active {
@@ -1402,7 +1420,8 @@
         justify-content: center;
         width: 100%;
         margin-top: 0.55rem;
-        padding: 0.65rem 1rem;
+        padding-block: 0.65rem;
+        padding-inline: 1rem;
         min-height: 3.15rem;
         font-family: "Cairo", sans-serif;
         font-weight: 800;
@@ -1536,9 +1555,10 @@
 
       .cod-form--card .cod-form__submit {
         margin-top: 0.65rem;
-        padding: 0.8rem 1.05rem;
+        padding-block: 0.8rem;
+        padding-inline: 1.05rem;
         min-height: 3.2rem;
-        border-radius: 14px;
+        border-radius: 16px;
         font-size: clamp(1.02rem, 2.25vw, 1.12rem);
       }
 
@@ -1575,6 +1595,20 @@
 
       .product-card__title-link:hover {
         color: var(--accent);
+      }
+
+      #saqr.product-card {
+        box-shadow:
+          0 6px 28px rgba(15, 23, 42, 0.09),
+          0 0 0 1px rgba(217, 119, 6, 0.12),
+          0 0 20px rgba(217, 119, 6, 0.14);
+      }
+
+      #saqr.product-card:hover {
+        box-shadow:
+          0 16px 44px rgba(15, 23, 42, 0.12),
+          0 0 0 1px rgba(217, 119, 6, 0.15),
+          0 0 32px rgba(217, 119, 6, 0.22);
       }
 
       .lp-back {
@@ -2337,8 +2371,9 @@
         }
 
         .cod-form__input {
-          min-height: 2.75rem;
-          padding: 0.55rem 0.82rem;
+          min-height: 2.9rem;
+          padding-block: 0.8rem;
+          padding-inline: 1rem;
         }
 
         .cod-form__qty {
@@ -2353,7 +2388,8 @@
 
         .cod-form--card .cod-form__input {
           min-height: 2.85rem;
-          padding: 0.6rem 0.85rem;
+          padding-block: 0.78rem;
+          padding-inline: 0.95rem;
         }
 
         .cod-form__submit {
