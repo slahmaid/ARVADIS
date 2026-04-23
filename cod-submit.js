@@ -1,4 +1,5 @@
 (function () {
+  var ENDPOINT = "api/submit-cod.php";
   var PHONE_RE = /^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/;
   // Paste your deployed Google Apps Script Web App URLs here.
   var GOOGLE_SHEETS_ENDPOINTS = {
@@ -52,6 +53,28 @@
     return "arvadis_evt_" + Date.now() + "_" + randomToken;
   }
 
+  function ensureHiddenInput(form, name, value) {
+    var node = form.querySelector('input[name="' + name + '"]');
+    if (!node) {
+      node = document.createElement("input");
+      node.type = "hidden";
+      node.name = name;
+      form.appendChild(node);
+    }
+    node.value = value || "";
+    return node;
+  }
+
+  function ensureFormEventId(form) {
+    var existing =
+      (form.querySelector('input[name="fb_event_id"]') || {}).value ||
+      (form.querySelector('input[name="event_id"]') || {}).value;
+    var eventId = existing || generateEventId();
+    ensureHiddenInput(form, "fb_event_id", eventId);
+    ensureHiddenInput(form, "event_id", eventId);
+    return eventId;
+  }
+
   function detectSheetKey(form, payload) {
     var explicit = form.getAttribute("data-sheet-key");
     if (explicit) return explicit.trim().toLowerCase();
@@ -100,6 +123,7 @@
 
   function formToPayload(form) {
     var data = new FormData(form);
+    var eventId = String(data.get("fb_event_id") || data.get("event_id") || "").trim() || generateEventId();
     var quantity = sanitizeQuantity(data.get("quantity"));
     var productName = (data.get("product") || "").toString();
     var variantModel = extractVariantModel(form, productName);
@@ -129,7 +153,8 @@
       page_url: window.location.href,
       page_path: window.location.pathname,
       submitted_at: new Date().toISOString(),
-      event_id: generateEventId(),
+      event_id: eventId,
+      fb_event_id: eventId,
     };
   }
 
@@ -330,6 +355,34 @@
       : base + (base.indexOf("?") === -1 ? "?text=" : "&text=") + encodeURIComponent(details);
   }
 
+  function submitToLocalApi(payload) {
+    return fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    })
+      .then(function (res) {
+        return res
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (data) {
+            if (!res.ok || data.ok !== true) {
+              throw new Error((data && data.error) || "تعذر حفظ الطلب في النظام المحلي.");
+            }
+            return data;
+          });
+      });
+  }
+
+  function submitToLocalApiSilently(payload) {
+    submitToLocalApi(payload).catch(function () {});
+  }
+
   function submitToGoogleSheet(payload, sheetKey) {
     var url = GOOGLE_SHEETS_ENDPOINTS[sheetKey] || "";
     if (!url) {
@@ -491,6 +544,7 @@
     initQuantitySelector(form);
     initAdaptiveInputDirection(form);
     initTotalPriceHint(form);
+    ensureFormEventId(form);
     var initiateCheckoutFired = false;
     function trackInitiateCheckout() {
       if (initiateCheckoutFired) return;
@@ -541,9 +595,12 @@
       }
 
       var payload = formToPayload(form);
+      ensureHiddenInput(form, "fb_event_id", payload.event_id);
+      ensureHiddenInput(form, "event_id", payload.event_id);
       var productName = payload.product;
       var sheetKey = detectSheetKey(form, payload);
       setPending(form, true);
+      submitToLocalApiSilently(payload);
       submitToGoogleSheet(payload, sheetKey)
         .then(function () {
           var target = getThankYouUrl(form, productName);

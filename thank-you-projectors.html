@@ -23,7 +23,18 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '1812802596560985');
       fbq('track', 'PageView');
-      fbq('track', 'Purchase');
+      (function () {
+        var params = new URLSearchParams(window.location.search || "");
+        var value = Number(params.get("value") || 0);
+        var currency = params.get("currency") || "MAD";
+        var eventId = params.get("event_id") || "";
+        var payload = { value: Number.isFinite(value) ? value : 0, currency: currency };
+        if (eventId) {
+          fbq('track', 'Purchase', payload, { eventID: eventId });
+        } else {
+          fbq('track', 'Purchase', payload);
+        }
+      })();
     </script>
     <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1812802596560985&ev=PageView&noscript=1"
