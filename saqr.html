@@ -528,6 +528,36 @@
     <script src="floating-wa.js" defer></script>
     <script>
       (function () {
+        var fired = false;
+        function trackSaqrInitiateCheckout() {
+          if (fired) return;
+          fired = true;
+          if (typeof fbq === "function") {
+            fbq("track", "InitiateCheckout", {
+              content_name: "Saqr",
+              currency: "MAD",
+              value: 0,
+            });
+          }
+        }
+        var form = document.querySelector('.cod-form[data-sheet-key="saqr"]');
+        if (!form) return;
+        form.addEventListener("focusin", function (e) {
+          var t = e.target;
+          if (
+            t &&
+            t.matches &&
+            t.matches("input:not([type=hidden]), textarea, select")
+          ) {
+            trackSaqrInitiateCheckout();
+          }
+        });
+        var submit = form.querySelector(".cod-form__submit");
+        if (submit) {
+          submit.addEventListener("click", trackSaqrInitiateCheckout);
+        }
+      })();
+      (function () {
         var saqrBasePrice = 1899;
         var saqrUpsellPrice = 50;
         var priceNode = document.querySelector("[data-saqr-current-price]");
