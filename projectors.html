@@ -618,6 +618,36 @@
     <script src="floating-wa.js" defer></script>
     <script>
       (function () {
+        var fired = false;
+        function trackProjectorsInitiateCheckout() {
+          if (fired) return;
+          fired = true;
+          if (typeof fbq === "function") {
+            fbq("track", "InitiateCheckout", {
+              content_name: "Projectors",
+              currency: "MAD",
+              value: 0,
+            });
+          }
+        }
+        var form = document.querySelector('.cod-form[data-sheet-key="projectors"]');
+        if (!form) return;
+        form.addEventListener("focusin", function (e) {
+          var t = e.target;
+          if (
+            t &&
+            t.matches &&
+            t.matches("input:not([type=hidden]), textarea, select")
+          ) {
+            trackProjectorsInitiateCheckout();
+          }
+        });
+        var submit = form.querySelector(".cod-form__submit");
+        if (submit) {
+          submit.addEventListener("click", trackProjectorsInitiateCheckout);
+        }
+      })();
+      (function () {
         var featureVideo = document.querySelector(".lp-feature-video__media");
         if (!featureVideo) return;
 
