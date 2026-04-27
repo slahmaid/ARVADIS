@@ -137,7 +137,7 @@
                     </p>
                   </div>
                   <input type="hidden" name="product" value="صقر" />
-                  <input type="hidden" name="upsell_sd_card" value="لا" />
+                  <input type="hidden" name="upsell_sd_card" value="نعم - كارت ميموار 128GB Philips (مجاني)" />
                   <div class="cod-form__fields">
                     <label class="cod-form__label">
                       <span class="cod-form__label-row">
@@ -226,10 +226,11 @@
                       id="saqr-sd-card"
                       type="checkbox"
                       data-saqr-upsell
+                      checked
                     />
                     <span class="cod-form__upsell-content">
                       <span class="cod-form__upsell-title">+ كارت ميموار سعة 128GB من Philips</span>
-                      <span class="cod-form__upsell-price">50 درهم</span>
+                      <span class="cod-form__upsell-price">مجاني</span>
                     </span>
                   </label>
                   <p class="cod-form__urgency">الكمية محدودة - أكّد طلبك قبل نفاد العرض.</p>
@@ -559,7 +560,7 @@
       })();
       (function () {
         var saqrBasePrice = 1899;
-        var saqrUpsellPrice = 50;
+        var saqrUpsellPrice = 0;
         var priceNode = document.querySelector("[data-saqr-current-price]");
         var upsellCheckbox = document.querySelector("[data-saqr-upsell]");
         var upsellInput = document.querySelector('input[name="upsell_sd_card"]');
@@ -573,7 +574,7 @@
           var nextPrice = saqrBasePrice + (upsellCheckbox.checked ? saqrUpsellPrice : 0);
           priceNode.innerHTML = formatDh(nextPrice);
           if (upsellInput) {
-            upsellInput.value = upsellCheckbox.checked ? "نعم - كارت ميموار 128GB Philips (+50 درهم)" : "لا";
+            upsellInput.value = upsellCheckbox.checked ? "نعم - كارت ميموار 128GB Philips (مجاني)" : "لا";
           }
         }
 
