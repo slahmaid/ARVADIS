@@ -866,9 +866,20 @@
         min-width: 0;
       }
 
+      .variant-selector__title {
+        margin: 0.25rem 0 0.45rem;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 800;
+        line-height: 1.35;
+        color: #7f1d1d;
+        text-align: right;
+        direction: rtl;
+      }
+
       .projector-picker__btn {
         position: relative;
-        flex: 1 1 100%;
+        flex: 1 1 calc(50% - 0.25rem);
         min-width: 0;
         margin: 0;
       }
