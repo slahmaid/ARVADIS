@@ -28,11 +28,24 @@
         var value = Number(params.get("value") || 0);
         var currency = params.get("currency") || "MAD";
         var eventId = params.get("event_id") || "";
+        var sheetOkParam = params.get("sheet_ok");
+        var shouldTrackPurchase = sheetOkParam !== "0";
         var payload = { value: Number.isFinite(value) ? value : 0, currency: currency };
-        if (eventId) {
-          fbq('track', 'Purchase', payload, { eventID: eventId });
-        } else {
-          fbq('track', 'Purchase', payload);
+        if (shouldTrackPurchase) {
+          var dedupeKey = "arvadis_purchase_sent_" + (eventId || [window.location.pathname, currency, payload.value].join("_"));
+          try {
+            if (window.sessionStorage && window.sessionStorage.getItem(dedupeKey) === "1") {
+              return;
+            }
+            if (window.sessionStorage) {
+              window.sessionStorage.setItem(dedupeKey, "1");
+            }
+          } catch (e) {}
+          if (eventId) {
+            fbq('track', 'Purchase', payload, { eventID: eventId });
+          } else {
+            fbq('track', 'Purchase', payload);
+          }
         }
       })();
     </script>

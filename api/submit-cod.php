@@ -30,6 +30,7 @@ $pageUrl = trim((string)($input['page_url'] ?? ''));
 $submittedAt = trim((string)($input['submitted_at'] ?? ''));
 $eventId = trim((string)($input['fb_event_id'] ?? $input['event_id'] ?? ''));
 $firstName = trim((string)($input['first_name'] ?? ''));
+$sheetKey = trim((string)($input['sheet_key'] ?? ''));
 
 if ($product === '' || $name === '' || $phone === '' || $city === '') {
     http_response_code(422);
@@ -47,6 +48,11 @@ if (!preg_match('/^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/', $phoneNormalized)) {
 $rootDir = dirname(__DIR__);
 $dataDir = $rootDir . DIRECTORY_SEPARATOR . 'data';
 $dataFile = $dataDir . DIRECTORY_SEPARATOR . 'cod-orders.csv';
+$sheetEndpoints = [
+    'moka' => 'https://script.google.com/macros/s/AKfycbxgqWCWoeLxuvY8c0fEgjxYTfASAj4etmz-cUUTul_FU3ImN0jcVCIhhzp-XjhdAVcD/exec',
+    'saqr' => 'https://script.google.com/macros/s/AKfycbxG73Gaq_OSLB1jXPNxafui0DYwXRHsKHudE-Bb0XIRnHbeh3890lNJuriDLmkWNQ0/exec',
+    'projectors' => 'https://script.google.com/macros/s/AKfycbyFeWL5WCj_jzdED9eAm2ulM4-iYrjRlDvlu8hriyfS_GAJFO5yBiGfOzGHzohRFjM/exec',
+];
 
 if (!is_dir($dataDir) && !mkdir($dataDir, 0775, true) && !is_dir($dataDir)) {
     http_response_code(500);
@@ -54,8 +60,7 @@ if (!is_dir($dataDir) && !mkdir($dataDir, 0775, true) && !is_dir($dataDir)) {
     exit;
 }
 
-$isNewFile = !file_exists($dataFile);
-$fp = fopen($dataFile, 'ab');
+$fp = fopen($dataFile, 'c+b');
 if ($fp === false) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Failed to open data file'], JSON_UNESCAPED_UNICODE);
@@ -69,46 +74,106 @@ if (!flock($fp, LOCK_EX)) {
     exit;
 }
 
-if ($isNewFile) {
+rewind($fp);
+$existingContent = stream_get_contents($fp);
+if (!is_string($existingContent)) {
+    $existingContent = '';
+}
+$isNewFile = trim($existingContent) === '';
+$isDuplicateEvent = $eventId !== '' && strpos($existingContent, $eventId) !== false;
+
+if (!$isDuplicateEvent) {
+    fseek($fp, 0, SEEK_END);
+    if ($isNewFile) {
+        fputcsv($fp, [
+            'submitted_at',
+            'product',
+            'name',
+            'phone',
+            'city',
+            'quantity',
+            'unit_price_mad',
+            'compare_price_mad',
+            'line_total_mad',
+            'upsell_sd_card',
+            'page_url',
+            'event_id',
+        ]);
+    }
+
     fputcsv($fp, [
-        'submitted_at',
-        'product',
-        'name',
-        'phone',
-        'city',
-        'quantity',
-        'unit_price_mad',
-        'compare_price_mad',
-        'line_total_mad',
-        'upsell_sd_card',
-        'page_url',
+        $submittedAt !== '' ? $submittedAt : gmdate('c'),
+        $product,
+        $name,
+        $phone,
+        $city,
+        is_numeric($quantity) ? (string)(int) $quantity : '1',
+        $unitPrice !== '' && $unitPrice !== null ? (string) $unitPrice : '',
+        $comparePrice !== '' && $comparePrice !== null ? (string) $comparePrice : '',
+        $lineTotal !== '' && $lineTotal !== null ? (string) $lineTotal : '',
+        $upsell !== '' ? $upsell : 'لا',
+        $pageUrl,
+        $eventId,
     ]);
 }
-
-fputcsv($fp, [
-    $submittedAt !== '' ? $submittedAt : gmdate('c'),
-    $product,
-    $name,
-    $phone,
-    $city,
-    is_numeric($quantity) ? (string)(int) $quantity : '1',
-    $unitPrice !== '' && $unitPrice !== null ? (string) $unitPrice : '',
-    $comparePrice !== '' && $comparePrice !== null ? (string) $comparePrice : '',
-    $lineTotal !== '' && $lineTotal !== null ? (string) $lineTotal : '',
-    $upsell !== '' ? $upsell : 'لا',
-    $pageUrl,
-]);
 fflush($fp);
 flock($fp, LOCK_UN);
 fclose($fp);
 
-echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+$productLower = mb_strtolower($product, 'UTF-8');
+if ($sheetKey === '') {
+    if (str_contains($productLower, 'projector') || str_contains($productLower, 'بروجيكتور')) {
+        $sheetKey = 'projectors';
+    } elseif (str_contains($productLower, 'saqr') || str_contains($productLower, 'صقر')) {
+        $sheetKey = 'saqr';
+    } else {
+        $sheetKey = 'moka';
+    }
+}
+
+$sheetOk = false;
+$sheetUrl = $sheetEndpoints[$sheetKey] ?? '';
+if ($isDuplicateEvent) {
+    $sheetOk = true;
+} elseif ($sheetUrl !== '' && function_exists('curl_init')) {
+    $sheetPayload = [
+        'product' => $product,
+        'variant_model' => trim((string)($input['variant_model'] ?? '')),
+        'name' => $name,
+        'phone' => $phone,
+        'city' => $city,
+        'quantity' => is_numeric($quantity) ? (int) $quantity : 1,
+        'unit_price_mad' => $unitPrice !== '' && $unitPrice !== null ? (string) $unitPrice : '',
+        'compare_price_mad' => $comparePrice !== '' && $comparePrice !== null ? (string) $comparePrice : '',
+        'line_total_mad' => $lineTotal !== '' && $lineTotal !== null ? (string) $lineTotal : '',
+        'upsell_sd_card' => $upsell !== '' ? $upsell : 'لا',
+    ];
+
+    $chSheet = curl_init($sheetUrl);
+    if ($chSheet !== false) {
+        curl_setopt_array($chSheet, [
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => ['Content-Type: text/plain;charset=utf-8'],
+            CURLOPT_POSTFIELDS => json_encode($sheetPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT_MS => 3500,
+            CURLOPT_CONNECTTIMEOUT_MS => 1200,
+        ]);
+        curl_exec($chSheet);
+        $httpCode = (int) curl_getinfo($chSheet, CURLINFO_HTTP_CODE);
+        $curlErr = curl_errno($chSheet);
+        curl_close($chSheet);
+        $sheetOk = $curlErr === 0 && $httpCode >= 200 && $httpCode < 300;
+    }
+}
+
+echo json_encode(['ok' => true, 'sheet_ok' => $sheetOk, 'duplicate_event' => $isDuplicateEvent], JSON_UNESCAPED_UNICODE);
 
 /**
  * Best-effort Meta Conversions API call for deduplication with browser pixel.
  * It is intentionally non-blocking for order UX.
  */
-if ($eventId !== '') {
+if ($eventId !== '' && !$isDuplicateEvent) {
     $pixelId = getenv('META_PIXEL_ID') ?: '';
     $accessToken = getenv('META_CAPI_ACCESS_TOKEN') ?: '';
     $testCode = getenv('META_TEST_EVENT_CODE') ?: '';

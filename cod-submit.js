@@ -1,12 +1,6 @@
 (function () {
   var ENDPOINT = "api/submit-cod.php";
   var PHONE_RE = /^(?:\+212[67][0-9]{8}|0[67][0-9]{8})$/;
-  // Paste your deployed Google Apps Script Web App URLs here.
-  var GOOGLE_SHEETS_ENDPOINTS = {
-    moka: "https://script.google.com/macros/s/AKfycbxgqWCWoeLxuvY8c0fEgjxYTfASAj4etmz-cUUTul_FU3ImN0jcVCIhhzp-XjhdAVcD/exec",
-    saqr: "https://script.google.com/macros/s/AKfycbxG73Gaq_OSLB1jXPNxafui0DYwXRHsKHudE-Bb0XIRnHbeh3890lNJuriDLmkWNQ0/exec",
-    projectors: "https://script.google.com/macros/s/AKfycbyFeWL5WCj_jzdED9eAm2ulM4-iYrjRlDvlu8hriyfS_GAJFO5yBiGfOzGHzohRFjM/exec",
-  };
 
   function getThankYouUrl(form, productName) {
     var explicitTarget = form.getAttribute("data-thank-you");
@@ -140,6 +134,7 @@
       .split(/\s+/)[0];
     return {
       product: productName,
+      sheet_key: sheetKey,
       variant_model: variantModel,
       first_name: firstName,
       name: data.get("first_name") || data.get("name") || "",
@@ -379,88 +374,6 @@
       });
   }
 
-  function submitToLocalApiSilently(payload) {
-    submitToLocalApi(payload).catch(function () {});
-  }
-
-  function submitToGoogleSheet(payload, sheetKey) {
-    var url = GOOGLE_SHEETS_ENDPOINTS[sheetKey] || "";
-    if (!url) {
-      return Promise.reject(new Error("لم يتم إعداد رابط Google Sheet لهذا النموذج بعد."));
-    }
-    // Only send core form fields to the Google Sheet, exclude tracking fields
-    var sheetPayload = {
-      product: payload.product,
-      variant_model: payload.variant_model,
-      name: payload.name,
-      phone: payload.phone,
-      city: payload.city,
-      quantity: payload.quantity,
-      unit_price_mad: payload.unit_price_mad,
-      compare_price_mad: payload.compare_price_mad,
-      line_total_mad: payload.line_total_mad,
-      upsell_sd_card: payload.upsell_sd_card,
-    };
-    var isAppsScript = /script\.google\.com/i.test(url);
-    if (isAppsScript) {
-      try {
-        var body = JSON.stringify(sheetPayload);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-      // Fire-and-forget for Apps Script to avoid false timeout/CORS negatives.
-      if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-        var blob = new Blob([body], { type: "text/plain;charset=utf-8" });
-        var queued = navigator.sendBeacon(url, blob);
-        if (queued) {
-          return Promise.resolve("beacon-queued");
-        }
-      }
-
-      fetch(url, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8",
-        },
-        body: body,
-        keepalive: true,
-      }).catch(function () {
-        // Ignore here: this path is best-effort and should not block UX.
-      });
-      return Promise.resolve("no-cors-dispatched");
-    }
-
-    var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-    var timeout = setTimeout(function () {
-      if (controller) controller.abort();
-    }, 5000);
-
-    return fetch(url, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-      body: JSON.stringify(sheetPayload),
-      signal: controller ? controller.signal : undefined,
-    })
-      .then(function (res) {
-        clearTimeout(timeout);
-        if (!res.ok) {
-          throw new Error("تعذر إرسال الطلب إلى Google Sheet.");
-        }
-        return res.text();
-      })
-      .catch(function (err) {
-        clearTimeout(timeout);
-        if (err && err.name === "AbortError") {
-          throw new Error("انتهت مهلة الإرسال. حاول مجددًا أو أرسل عبر واتساب.");
-        }
-        throw err;
-      });
-  }
-
   function initQuantitySelector(form) {
     var qtyWrap = form.querySelector("[data-qty-selector]");
     var qtyInput = form.querySelector('input[name="quantity"]');
@@ -582,6 +495,7 @@
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (form.dataset.submitting === "1") return;
       errorNode.style.display = "none";
       errorNode.innerHTML = "";
 
@@ -598,16 +512,17 @@
       ensureHiddenInput(form, "fb_event_id", payload.event_id);
       ensureHiddenInput(form, "event_id", payload.event_id);
       var productName = payload.product;
-      var sheetKey = detectSheetKey(form, payload);
+      form.dataset.submitting = "1";
       setPending(form, true);
-      submitToLocalApiSilently(payload);
-      submitToGoogleSheet(payload, sheetKey)
-        .then(function () {
+      submitToLocalApi(payload)
+        .then(function (apiResult) {
+          var sheetOk = !apiResult || apiResult.sheet_ok !== false;
           var target = getThankYouUrl(form, productName);
           target = appendThankYouParams(target, {
             event_id: payload.event_id,
             value: payload.line_total_mad != null ? payload.line_total_mad : payload.unit_price_mad || 0,
             currency: "MAD",
+            sheet_ok: sheetOk ? "1" : "0",
           });
           if (typeof window.requestAnimationFrame === "function") {
             window.requestAnimationFrame(function () {
@@ -623,8 +538,7 @@
           var fallbackUrl = makeFallbackWaUrl(form, payload);
           var message = sheetErr && sheetErr.message ? sheetErr.message : "تعذر إرسال الطلب الآن.";
           if (/Failed to fetch/i.test(message)) {
-            message =
-              "تعذر الاتصال برابط Google Sheet. تأكد من نشر Apps Script كـ Web App مع صلاحية Anyone.";
+            message = "تعذر إرسال الطلب الآن. تأكد من إعداد الخادم ثم حاول مجددًا.";
           }
           if (fallbackUrl) {
             errorNode.innerHTML =
@@ -636,6 +550,7 @@
             errorNode.textContent = message;
           }
           errorNode.style.display = "block";
+          form.dataset.submitting = "0";
           setPending(form, false);
         });
     });
